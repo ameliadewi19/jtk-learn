@@ -71,10 +71,10 @@
 /* Button Styling */
 .btn-danger {
     border-radius: 15px;
-    border-color: #EA6488;
     background: #EA6488;
     box-shadow: 0px 4px 6px 0px #E43866;
     padding: 10px;
+    border: none;
 }
 
 .btn-danger:hover {
