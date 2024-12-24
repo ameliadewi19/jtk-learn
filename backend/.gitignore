@@ -1,0 +1,29 @@
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+package-lock.json
+
+# React build output
+dist/
+
+# Build output (backend and frontend)
+build/
+dist/
+
+# Cache files
+.cache/
+
+# System files
+.DS_Store
+Thumbs.db
