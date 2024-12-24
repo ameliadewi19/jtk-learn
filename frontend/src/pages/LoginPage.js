@@ -39,16 +39,24 @@ const LoginPage = () => {
   };
 
   return (
-    <main>
+    <main className='font-montserrat'>
       <div className="container">
         <section className="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
           <div className="container">
             <div className="row justify-content-center">
               <div className="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
-                <div className="card mb-3">
+                <div className="card login-card shadow-lg mb-3 px-4">
+                  <div className="top-red-rectangle"></div>
+                  <div className="bottom-red-rectangle"></div>
+                  <div className='top-blue-rectangle'></div>
+                  <div className='bottom-blue-rectangle'></div>
                   <div className="card-body">
-                    <div className="pt-4 pb-2">
-                      <h5 className="card-title text-center pb-0 fs-4">Selamat Datang</h5>
+                    <div className="pt-3 pb-2">
+                      {/* center logo (logo file in public/logo512.png) */}
+                      <div className="text-center">
+                        <img src="/logo512.png" alt="logo" width="100" />
+                      </div>
+                      <h5 className="card-title text-left pb-0 fs-4 fw-bold">Selamat datang,</h5>
                     </div>
   
                     <form onSubmit={handleSubmit} className="row g-3 needs-validation" noValidate>
@@ -84,8 +92,8 @@ const LoginPage = () => {
                         <div className="invalid-feedback">Please enter your password!</div>
                       </div>
   
-                      <div className="col-12">
-                        <button className="btn btn-primary w-100" type="submit">
+                      <div className="col-12 text-center">
+                        <button className="btn-danger fw-bold" type="submit">
                           Login
                         </button>
                       </div>

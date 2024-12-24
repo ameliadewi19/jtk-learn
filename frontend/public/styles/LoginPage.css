@@ -1,0 +1,83 @@
+/* General Reset */
+.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+/* Login Card Styling */
+.login-card {
+    width: 425px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+    position: relative;
+    z-index: 1;
+
+}
+
+.top-red-rectangle {
+    position: absolute;
+    top: -25px;
+    left: -100px;
+    width: 300px;
+    height: 50px;
+    background-color: #EA6488;
+    transform: rotate(169deg);
+    z-index: -1;
+}
+
+.bottom-red-rectangle {
+    position: absolute;
+    bottom: -25px;
+    right: -100px;
+    width: 300px;
+    height: 50px;
+    background-color: #EA6488;
+    transform: rotate(169deg);
+    z-index: -1;
+}
+
+.top-blue-rectangle {
+    position: absolute;
+    top: -50px;
+    left: -100px;
+    width: 600px;
+    height: 165px;
+    background-color: #6488EA;
+    transform: rotate(169deg);
+    z-index: -2;
+}
+
+.bottom-blue-rectangle {
+    position: absolute;
+    bottom: -50px;
+    right: -15px;
+    width: 410px;
+    height: 90px;
+    background-color: #6488EA;
+    transform: rotate(169deg);
+    z-index: -2;
+}
+
+@media (max-width: 520px) {
+    .login-card {
+        width: 100%; /* Adjust width as needed for small screens */
+    }
+}
+
+/* Button Styling */
+.btn-danger {
+    border-radius: 15px;
+    border-color: #EA6488;
+    background: #EA6488;
+    box-shadow: 0px 4px 6px 0px #E43866;
+    padding: 10px;
+}
+
+.btn-danger:hover {
+    filter: brightness(120%);
+    transition: all 0.3s ease;
+}
