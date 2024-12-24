@@ -19,7 +19,7 @@ module.exports = {
         allowNull: false,
       },
       role: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('pelajar', 'pengajar'),
         allowNull: false,
       },
       createdAt: {
