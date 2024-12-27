@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { UserContext } from '../components/UserContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleEmailChange = (e) => {
@@ -21,15 +23,15 @@ const LoginPage = () => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
-      if(data.user.role === 'pengajar') {
-        localStorage.setItem('idPengajar', data.user.userData.kode_dosen)
+      localStorage.setItem('user', JSON.stringify(data.user)); // Simpan data user di localStorage
+      setUser(data.user); // Perbarui state global user
+      if (data.user.role === 'pengajar') {
+        localStorage.setItem('idPengajar', data.user.userData.kode_dosen);
         navigate('/list-course');
       } else {
         navigate('/dashboard');
       }
-      localStorage.setItem('nama', data.user.userData.nama);
     } catch (error) {
-      console.log('error login: ', error)
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
@@ -54,11 +56,11 @@ const LoginPage = () => {
                     <div className="pt-3 pb-2">
                       {/* center logo (logo file in public/logo512.png) */}
                       <div className="text-center">
-                        <img src="/logo512.png" alt="logo" width="100" />
+                        .          <img src="/logo512.png" alt="logo" width="100" />
                       </div>
                       <h5 className="card-title text-left pb-0 fs-4 fw-bold">Selamat datang,</h5>
                     </div>
-  
+
                     <form onSubmit={handleSubmit} className="row g-3 needs-validation" noValidate>
                       <div className="col-12">
                         <label htmlFor="yourEmail" className="form-label">
@@ -76,7 +78,7 @@ const LoginPage = () => {
                           <div className="invalid-feedback">Please enter your email.</div>
                         </div>
                       </div>
-  
+
                       <div className="col-12">
                         <label htmlFor="yourPassword" className="form-label">
                           Password
@@ -91,7 +93,7 @@ const LoginPage = () => {
                         />
                         <div className="invalid-feedback">Please enter your password!</div>
                       </div>
-  
+
                       <div className="col-12 text-center">
                         <button className="btn-danger fw-bold" type="submit">
                           Login
@@ -100,7 +102,7 @@ const LoginPage = () => {
                     </form>
                   </div>
                 </div>
-  
+
                 <div className="credits"></div>
               </div>
             </div>
