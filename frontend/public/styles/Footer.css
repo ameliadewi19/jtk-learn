@@ -1,0 +1,19 @@
+.custom-footer {
+    background-color: #6488EA;  
+    color:rgb(0, 0, 0); 
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.7rem;
+    z-index: 1000;
+    height: 40px;
+    align-items: left;
+}
+
+.footer-text {
+    margin: 0;
+    font-weight: normal;
+}
