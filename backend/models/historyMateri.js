@@ -1,39 +1,54 @@
 'use strict';
 
-const { down } = require("../migrations/20241215053742-create-course");
-
-module.exports = {
-    async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('historyMateri', {
+const { Model } = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+    class HistoryMateri extends Model {
+        // relasi dengan tabel materi dan pelajar
+        static associate(models) {
+            HistoryMateri.belongsTo(models.Materi, {
+                foreignKey: 'id_materi',
+                as: 'materi',
+            });
+            HistoryMateri.belongsTo(models.Pelajar, {
+                foreignKey: 'id_pelajar',
+                as: 'pelajar',
+            });
+        }
+    }
+    HistoryMateri.init(
+        {
             id_pelajar: {
-                type: Sequelize.INTEGER,
+                type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'pelajar', // Nama tabel pelajar
+                    model: 'pelajar',
                     key: 'id_pelajar',
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
             id_materi: {
-                type: Sequelize.INTEGER,
+                type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'materi', // Nama tabel materi
+                    model: 'materi',
                     key: 'id_materi',
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
             waktu_akses: {
-                type: Sequelize.DATE,
+                type: DataTypes.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.NOW,
-            }
-        });
-    },
-
-    async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('historyMateri');
-    },
+                defaultValue: DataTypes.NOW,
+            },
+        },
+        {
+            sequelize,
+            modelName: 'HistoryMateri',
+            tableName: 'historyMateri',
+            timestamps: true,
+        }
+    );
+    return HistoryMateri;
 };

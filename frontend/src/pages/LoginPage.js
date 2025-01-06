@@ -27,9 +27,9 @@ const LoginPage = () => {
       setUser(data.user); // Perbarui state global user
       if (data.user.role === 'pengajar') {
         localStorage.setItem('idPengajar', data.user.userData.kode_dosen);
-        navigate('/list-course');
+        navigate('/dashboard-pengajar');
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard-pelajar');
       }
     } catch (error) {
       Swal.fire({
