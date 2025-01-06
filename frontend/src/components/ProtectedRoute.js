@@ -1,35 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api'; // Import api instance
 
 const ProtectedRoute = ({ children }) => {
-  const [hasAccess, setHasAccess] = useState(false); // State untuk menentukan akses
+  const [hasAccess, setHasAccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkAccess = async () => {
-      const token = localStorage.getItem('token'); // Ambil token dari localStorage
+      const token = localStorage.getItem('token');
 
       if (!token) {
-        navigate('/'); // Arahkan ke login jika token tidak ada
+        navigate('/'); // Redirect ke login jika token tidak ada
         return;
       }
 
       try {
-        const response = await axios.get('http://localhost:3000/protected-route', {
+        const response = await api.get('/protected-route', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         if (response.data === 'You have access to this route') {
-          setHasAccess(true); // Berikan akses jika respon valid
+          setHasAccess(true);
         } else {
-          navigate('/'); // Arahkan ke login jika respon tidak valid
+          navigate('/');
         }
       } catch (error) {
         console.error('Access validation failed:', error);
-        navigate('/'); // Arahkan ke login jika terjadi error
+        navigate('/');
       }
     };
 
@@ -37,10 +37,10 @@ const ProtectedRoute = ({ children }) => {
   }, [navigate]);
 
   if (!hasAccess) {
-    return <p>Loading...</p>; // Tampilkan loading sementara akses dicek
+    return <p>Loading...</p>;
   }
 
-  return <>{children}</>; // Tampilkan komponen anak jika memiliki akses
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
