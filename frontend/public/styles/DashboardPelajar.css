@@ -1,0 +1,25 @@
+.card-courses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 50px;
+}
+
+.card-courses .card {
+    border: 1.5px solid black;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    width: 120%;
+    max-width: 500px;
+    transition: all 0.3s ease;
+}
+
+.card-courses .card:hover {
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+}
+
+.card-courses .card img {
+    border-bottom: 1.5px solid black;
+    border-radius: 6px 6px 0 0;
+}
+  

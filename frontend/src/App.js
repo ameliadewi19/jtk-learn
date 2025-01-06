@@ -13,9 +13,16 @@ function App() {
     <UserProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route
-            path="/list-course"
+          <Route 
+            path="/" 
+            element={
+              <>
+                <LoginPage />
+              </>
+            } 
+          />
+          <Route 
+            path="/list-course" 
             element={
               <ProtectedRoute>
                 <>
