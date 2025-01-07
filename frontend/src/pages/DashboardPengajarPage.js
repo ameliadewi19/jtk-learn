@@ -3,16 +3,18 @@ import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
+import { useNavigate } from 'react-router-dom';
 
-const DashboardPelajar = () => {
+const DashboardPengajar = () => {
   const [courseList, setCourseList] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
   const { user } = useContext(UserContext);
+  const navigate = useNavigate();
 
   const fetchCourses = async () => {
     try {
-      const response = await api.get('/courses', {
+      const response = await api.get(`/courses/pengajar/${user.userData.kode_dosen}`, { 
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -34,6 +36,10 @@ const DashboardPelajar = () => {
     }
   };
 
+  const handleCreateCourse = () => {
+    navigate('/create-course');
+  };
+
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -48,7 +54,20 @@ const DashboardPelajar = () => {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h3 className="fw-light mb-0" style={{ fontSize: '24px' }}>Hi, {user.userData.nama}!</h3>
         </div>
-        <h3 className="fw-bold mb-4" style={{ fontSize: '27px' }}>Courses</h3>
+        <div className="dashboard-flex justify-content-between align-items-center mb-4">
+          <h3 className="fw-bold mb-4" style={{ fontSize: '27px' }}>Courses</h3>
+          <button
+            className="add-course-button ml-auto"
+            onClick={handleCreateCourse}
+          >
+            <img
+              src="/add.png"
+              alt="Add Course"
+              className="add-course-icon"
+            />
+            Add Course
+          </button>
+        </div>
       </div>
       <div className="container ms-4">
         <div className="card-courses">
@@ -76,4 +95,4 @@ const DashboardPelajar = () => {
   );
 }
 
-export default DashboardPelajar;
+export default DashboardPengajar;

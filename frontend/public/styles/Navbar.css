@@ -137,7 +137,7 @@
     align-items: center; 
     justify-content: left; 
     gap: 8px; 
-    background-color: #E43866;
+    background-color: #ff6384;;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -150,11 +150,11 @@
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-bottom: 6px solid #E43866; 
+    border-bottom: 6px solid #ff6384;
 }
 
 .dropdown-button:hover {
-    background-color: rgb(221, 124, 150);
+    background-color: #E43866;
     color: black;
     border-color: darkgray;
 }

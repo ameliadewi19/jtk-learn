@@ -112,30 +112,26 @@ const updateCourse = async (req, res) => {
     }
   };  
 
-// Delete course
-const deleteCourse = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const course = await Course.findOne({ where: { id_course: id } });
-
-    if (!course) {
-      return res.status(404).json({ message: 'Course not found.' });
+//get course sesuai id pengajar
+const getCoursePengajar = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const course = await Course.findAll({
+        where: { id_pengajar: id },
+        include: [{ model: Pengajar, as: 'pengajar' }],
+      });
+  
+      res.status(200).json(course);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to fetch the course.' });
     }
-
-    await course.destroy();
-
-    res.status(200).json({ message: 'Course deleted successfully.' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to delete the course.' });
-  }
-};
+  };
 
 module.exports = {
   getAllCourses,
   getCourseById,
   createCourse,
   updateCourse,
-  deleteCourse,
+  getCoursePengajar,
 };

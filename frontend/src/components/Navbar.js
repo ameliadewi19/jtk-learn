@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { UserContext } from '../components/UserContext';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const { user } = useContext(UserContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null); // Reference for the dropdown container
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -15,6 +16,19 @@ const Navbar = () => {
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false); 
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
 
   return (
     <nav className="navbar navbar-expand-lg custom-navbar">
@@ -39,7 +53,8 @@ const Navbar = () => {
               <a
                 className="nav-link active"
                 aria-current="page"
-                href={user?.role === 'pengajar' ? '/list-course' : '/dashboard'}>
+                href={user?.role === 'pengajar' ? '/list-course' : '/dashboard'}
+              >
                 Dashboard
               </a>
             </li>
@@ -52,7 +67,7 @@ const Navbar = () => {
               <a className="nav-link" href="/history-quiz">History Quiz</a>
             </li>
             {/* Dropdown My Account */}
-            <li className="nav-name dropdown">
+            <li className="nav-name dropdown" ref={dropdownRef}>
               <a
                 className="nav-link"
                 href="#"
@@ -64,13 +79,13 @@ const Navbar = () => {
                 <span className={`dropdown-arrow ${dropdownOpen ? 'open' : ''}`}></span>
               </a>
               {dropdownOpen && (
-                  <button
-                    className="dropdown-button dropdown-position"
-                    onClick={handleLogout}
-                  >
-                    <img src="/logout.png" alt="Logout Icon" className="logout-icon" />
-                    Logout
-                  </button>
+                <button
+                  className="dropdown-button dropdown-position"
+                  onClick={handleLogout}
+                >
+                  <img src="/logout.png" alt="Logout Icon" className="logout-icon" />
+                  Logout
+                </button>
               )}
             </li>
             {/* End Dropdown */}
