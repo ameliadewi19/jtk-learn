@@ -3,12 +3,14 @@ import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardPelajar = () => {
   const [courseList, setCourseList] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
   const { user } = useContext(UserContext);
+  const navigate = useNavigate();
 
   const fetchCourses = async () => {
     try {
@@ -43,26 +45,27 @@ const DashboardPelajar = () => {
   }
 
   return (
-    <>
-      <div className="container mt-4 ms-5">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="fw-light mb-0" style={{ fontSize: '24px' }}>Hi, {user.userData.nama}!</h3>
-        </div>
-        <h3 className="fw-bold mb-4" style={{ fontSize: '27px' }}>Courses</h3>
-      </div>
-      <div className="container ms-4">
-        <div className="card-courses">
+    <div className="container-fluid py-4">
+      <div className="container-dashboard">
+        <h3 className="greeting-title">Hi, {user.userData.nama}!</h3>
+        <h3 className="courses-title">Courses</h3>
+        <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div key={course.id} className="card ms-5 md-5" style={{ width: '19rem' }}>
-                <img
-                  src={course.image}
-                  className="card-img-top fixed-image"
-                  alt={course.title}
-                />
-                <div className="card-body ">
-                  <h6 className="card-title fw-bold">{course.title}</h6>
-                  <p className="card-text">{course.author}</p>
+              <div key={course.id} className="col-12 col-sm-6 col-lg-3">
+                <div
+                  className="card"
+                  onClick={() => navigate(`/course/${course.id}`)}
+                >
+                  <img
+                    src={course.image}
+                    className="card-img-top"
+                    alt={course.title}
+                  />
+                  <div className="card-body">
+                    <h6 className="card-title">{course.title}</h6>
+                    <p className="card-text">{course.author}</p>
+                  </div>
                 </div>
               </div>
             ))
@@ -71,9 +74,8 @@ const DashboardPelajar = () => {
           )}
         </div>
       </div>
-
-    </>
+    </div>
   );
-}
+};
 
 export default DashboardPelajar;

@@ -14,7 +14,7 @@ const DashboardPengajar = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await api.get(`/courses/pengajar/${user.userData.kode_dosen}`, { 
+      const response = await api.get(`/courses/pengajar/${user.userData.kode_dosen}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -49,15 +49,13 @@ const DashboardPengajar = () => {
   }
 
   return (
-    <>
-      <div className="container mt-4 ms-5">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="fw-light mb-0" style={{ fontSize: '24px' }}>Hi, {user.userData.nama}!</h3>
-        </div>
-        <div className="dashboard-flex justify-content-between align-items-center mb-4">
-          <h3 className="fw-bold mb-4" style={{ fontSize: '27px' }}>Courses</h3>
+    <div className="container-fluid py-4">
+      <div className="container-dashboard">
+        <h3 className="greeting-title">Hi, {user.userData.nama}!</h3>
+        <div className="dashboard-flex">
+          <h3 className="courses-title">Courses</h3>
           <button
-            className="add-course-button ml-auto"
+            className="add-course-button"
             onClick={handleCreateCourse}
           >
             <img
@@ -68,20 +66,23 @@ const DashboardPengajar = () => {
             Add Course
           </button>
         </div>
-      </div>
-      <div className="container ms-4">
-        <div className="card-courses">
+        <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div key={course.id} className="card ms-5 md-5" style={{ width: '19rem' }}>
-                <img
-                  src={course.image}
-                  className="card-img-top fixed-image"
-                  alt={course.title}
-                />
-                <div className="card-body ">
-                  <h6 className="card-title fw-bold">{course.title}</h6>
-                  <p className="card-text">{course.author}</p>
+              <div key={course.id} className="col-12 col-sm-6 col-lg-3">
+                <div
+                  className="card"
+                  onClick={() => navigate(`/course/${course.id}`)}
+                >
+                  <img
+                    src={course.image}
+                    className="card-img-top"
+                    alt={course.title}
+                  />
+                  <div className="card-body">
+                    <h6 className="card-title">{course.title}</h6>
+                    <p className="card-text">{course.author}</p>
+                  </div>
                 </div>
               </div>
             ))
@@ -90,9 +91,8 @@ const DashboardPengajar = () => {
           )}
         </div>
       </div>
-
-    </>
+    </div>
   );
-}
+};
 
 export default DashboardPengajar;
