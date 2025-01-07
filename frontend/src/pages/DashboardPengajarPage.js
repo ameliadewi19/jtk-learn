@@ -5,7 +5,7 @@ import api from '../services/api';
 import { UserContext } from '../components/UserContext';
 import { useNavigate } from 'react-router-dom';
 
-const DashboardPelajar = () => {
+const DashboardPengajar = () => {
   const [courseList, setCourseList] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
@@ -14,7 +14,7 @@ const DashboardPelajar = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await api.get('/courses', {
+      const response = await api.get(`/courses/pengajar/${user.userData.kode_dosen}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -36,6 +36,10 @@ const DashboardPelajar = () => {
     }
   };
 
+  const handleCreateCourse = () => {
+    navigate('/create-course');
+  };
+
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -48,7 +52,20 @@ const DashboardPelajar = () => {
     <div className="container-fluid py-4">
       <div className="container-dashboard">
         <h3 className="greeting-title">Hi, {user.userData.nama}!</h3>
-        <h3 className="courses-title">Courses</h3>
+        <div className="dashboard-flex">
+          <h3 className="courses-title">Courses</h3>
+          <button
+            className="add-course-button"
+            onClick={handleCreateCourse}
+          >
+            <img
+              src="/add.png"
+              alt="Add Course"
+              className="add-course-icon"
+            />
+            Add Course
+          </button>
+        </div>
         <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
@@ -78,4 +95,4 @@ const DashboardPelajar = () => {
   );
 };
 
-export default DashboardPelajar;
+export default DashboardPengajar;
