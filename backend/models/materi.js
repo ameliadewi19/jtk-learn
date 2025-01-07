@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
             },
             jenis_materi: {
-                type: Sequelize.ENUM('teks', 'video'),
+                type: DataTypes.ENUM('teks', 'video'),
                 allowNull: true,
             },
         },

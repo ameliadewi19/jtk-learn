@@ -7,6 +7,8 @@ import DashboardPengajar from './pages/DashboardPengajarPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
+import SidebarPelajar from './components/SidebarPelajar';
+import SidebarPengajar from './components/SidebarPengajar';
 
 function App() {
   return (
@@ -39,6 +41,50 @@ function App() {
                 <>
                   <Navbar />
                   <DashboardPengajar />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learn-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <SidebarPelajar/>
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <SidebarPengajar/>
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learn-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <SidebarPelajar/>
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <SidebarPengajar/>
                 </>
               </ProtectedRoute>
             }
