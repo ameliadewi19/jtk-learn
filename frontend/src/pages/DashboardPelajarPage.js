@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
@@ -8,6 +9,7 @@ const DashboardPelajar = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
   const studentName = localStorage.getItem('nama');
+  const navigate = useNavigate();
 
   const fetchCourses = async () => {
     try{
@@ -36,6 +38,10 @@ const DashboardPelajar = () => {
     fetchCourses();
   }, []);
 
+  const handleCourseClick = () => {
+    navigate(`/learn-course`);
+  };
+
   if (loading) {
     return <div className="text-center mt-5">Loading...</div>;
   }
@@ -52,7 +58,11 @@ const DashboardPelajar = () => {
         <div className="row card-courses">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div key={course.id} className="col-md-3 mb-3 ms-5">
+              <div 
+                key={course.id_course} 
+                className="col-md-3 mb-3 ms-5"
+                onClick={() => handleCourseClick(course.id_course)}  
+              >
                 <div className="card">
                   <img
                     src={course.image}
