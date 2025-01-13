@@ -1,0 +1,38 @@
+.error-modal {
+    background-color:rgb(255, 255, 255);
+    border-radius: 8px;
+    text-align: center;
+    padding: 20px;
+}
+  
+.error-modal-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+}
+  
+.error-modal-title {
+    color: #721c24;
+    margin-bottom: 15px;
+}
+  
+.error-modal-message {
+    color: #721c24;
+    margin-bottom: 20px;
+}
+  
+.error-modal-button {
+    background-color: #6488EA !important; 
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .error-modal-button:hover {
+    background-color: #5072c9 !important;
+  }
+  
+  

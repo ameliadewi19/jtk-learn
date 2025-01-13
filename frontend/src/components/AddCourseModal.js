@@ -5,6 +5,7 @@ const CourseModal = ({ show, onClose, onSubmit, initialData }) => {
   const [description, setDescription] = useState('');
   const [enrollmentKey, setEnrollmentKey] = useState('');
   const [image, setImage] = useState(null);
+  
 
   useEffect(() => {
     if (initialData) {

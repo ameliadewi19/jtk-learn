@@ -1,41 +1,24 @@
 const { Materi, Course } = require('../models');
 
-// Get all materi
 const getAllMateri = async (req, res) => {
   try {
+    const { id } = req.params; 
     const materi = await Materi.findAll({
-        include: [
-          {
-            model: Course,
-            as: 'course', // Pastikan sama dengan alias di relasi
-          },
-        ],
-      });;
-    res.status(200).json(materi);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Get materi by ID
-const getMateriById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const materi = await Materi.findOne({ 
-        where: { id_materi: id },
-        include: [{ model: Course, as: 'course' }],
+      where: { id_course: id }, 
+      include: [
+        {
+          model: Course,
+          as: 'course',
+        },
+      ],
     });
-    if (!materi) {
-      return res.status(404).json({ message: 'Materi not found.' });
-    }
-
     res.status(200).json(materi);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Create new materi
+
 const createMateri = async (req, res) => {
   try {
     const { id_course, nama_materi, konten_materi, jenis_materi } = req.body;
@@ -53,7 +36,6 @@ const createMateri = async (req, res) => {
   }
 };
 
-// Update materi
 const updateMateri = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,7 +55,6 @@ const updateMateri = async (req, res) => {
   }
 };
 
-// Delete materi
 const deleteMateri = async (req, res) => {
   try {
     const { id } = req.params;
@@ -94,7 +75,6 @@ const deleteMateri = async (req, res) => {
 
 module.exports = { 
     getAllMateri, 
-    getMateriById, 
     createMateri, 
     updateMateri, 
     deleteMateri 

@@ -2,22 +2,66 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { FaEllipsisV, FaGripVertical } from 'react-icons/fa';
+import { useEffect } from "react";
+import Swal from "sweetalert2";
+import api from "../services/api";
+
 
 const SidebarPengajar = () => {
+
   // Dummy data untuk course, materi, dan quiz
   const [course, setCourse] = useState({
-    name: "Matematika Diskrit",
-    materi: [
-      { id: 1, name: "Logika Proposisi", type: "materi" },
-      { id: 2, name: "Kuis Logika Proposisi", type: "quiz" },
-      { id: 3, name: "Dummy", type: "quiz" },
-    ],
+    name: "Pengenalan Pemrograman Web",
+    materi: [],
   });
+  const id_course = 1; // Dummy id_course untuk testing
+
+  // const [course, setCourse] = useState({
+  //   name: "Matematika Diskrit",
+  //   materi: [
+  //     { id: 1, name: "Logika Proposisi", type: "materi" },
+  //     { id: 2, name: "Kuis Logika Proposisi", type: "quiz" },
+  //     { id: 3, name: "Dummy", type: "quiz" },
+  //   ],
+  // });
 
   const [selectedMateri, setSelectedMateri] = useState(course.materi[0]?.id || null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
+  const token = localStorage.getItem('token');
+  
+  const fetchMateriByCourse = async () => {
+    try {
+      const id_course = 1; // Dummy id_course untuk testing
+
+      const response = await api.get(`/materials/course/${id_course}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const mappedMateri = response.data.map((materi) => ({
+        id: materi.id_materi,
+        name: materi.nama_materi,
+        type: materi.jenis_materi,
+      }));
+
+      setCourse((prevCourse) => ({
+        ...prevCourse,
+        materi: mappedMateri,
+      }));
+    } catch (error) {
+      console.error('Error fetching materi:', error);
+      Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+    }
+  };
+
+  useEffect(() => {
+    if (id_course) {
+      fetchMateriByCourse();
+    }
+  }, [id_course]);
 
   const handleClick = (item) => {
     setSelectedMateri(item.id);
@@ -72,8 +116,8 @@ const SidebarPengajar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg" style={{padding : '0px 0px'}}>
-      <div className="container-fluid" style={{padding : '0px 0px'}}>
+    <nav className="navbar navbar-expand-lg" style={{ padding: '0px 0px' }}>
+      <div className="container-fluid" style={{ padding: '0px 0px' }}>
         <button
           className="navbar-toggler d-lg-none"
           type="button"
@@ -98,7 +142,7 @@ const SidebarPengajar = () => {
               <span className="edit-mode">EDIT MODE!</span>
             </div>
 
-            <hr className="custom-hr"/>
+            <hr className="custom-hr" />
 
             <ul className="learn-list mt-1">
               {course.materi.map((item) => (
@@ -116,52 +160,52 @@ const SidebarPengajar = () => {
                     <FaGripVertical style={{ cursor: 'move', marginTop: '-5px', fontSize: '20px' }} />
                   </span>
                   <span className="icon ms-3 me-2">
-                  {item.type === "materi" ? (
-                    <img src="/materi.png" alt="Materi" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
+                    {item.type === "materi" ? (
+                      <img src="/materi.png" alt="Materi" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
                     ) : (
-                    <img src="/quiz.png" alt="Quiz" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                  )}
+                      <img src="/quiz.png" alt="Quiz" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
+                    )}
                   </span>
                   {item.name}
                   <div className="dropdown ms-auto">
                     <button
-                        className="btn btn-link"
-                        type="button"
-                        style={{color: "#000"}}
-                        onClick={() => handleDropdownToggle(item.id)} // Toggle dropdown berdasarkan ID item
-                        aria-expanded={openDropdown === item.id ? 'true' : 'false'}
+                      className="btn btn-link"
+                      type="button"
+                      style={{ color: "#000" }}
+                      onClick={() => handleDropdownToggle(item.id)} // Toggle dropdown berdasarkan ID item
+                      aria-expanded={openDropdown === item.id ? 'true' : 'false'}
                     >
-                        <FaEllipsisV style={{ fontSize: '15px', marginTop: '-3px' }} />
+                      <FaEllipsisV style={{ fontSize: '15px', marginTop: '-3px' }} />
                     </button>
                     {openDropdown === item.id && (
-                        <ul className="dropdown-menu show dropdown-learnlist" aria-labelledby="dropdownMenuButton">
+                      <ul className="dropdown-menu show dropdown-learnlist" aria-labelledby="dropdownMenuButton">
                         <li>
-                            <button className="dropdown-item" onClick={() => handleEdit(item)}>
-                                <img src="/edit.png" alt="edit" style={{ width: "12px", height: "12px", marginTop: "-5px", marginRight:"7px" }} />
-                                Edit
-                            </button>
+                          <button className="dropdown-item" onClick={() => handleEdit(item)}>
+                            <img src="/edit.png" alt="edit" style={{ width: "12px", height: "12px", marginTop: "-5px", marginRight: "7px" }} />
+                            Edit
+                          </button>
                         </li>
                         <li>
-                            <button className="dropdown-item" onClick={() => handleDelete(item)}>
-                                <img src="/delete.png" alt="delete" style={{ width: "12px", height: "12px", marginTop: "-5px", marginRight:"7px" }} />
-                                Delete
-                            </button>
+                          <button className="dropdown-item" onClick={() => handleDelete(item)}>
+                            <img src="/delete.png" alt="delete" style={{ width: "12px", height: "12px", marginTop: "-5px", marginRight: "7px" }} />
+                            Delete
+                          </button>
                         </li>
-                        </ul>
+                      </ul>
                     )}
                   </div>
                 </li>
               ))}
             </ul>
             <div className="d-flex justify-content-between mt-3">
-                <button className="btn btn-add-learnlist d-flex justify-content-start" onClick={handleAddMaterial}>
-                    <img src="/add.png" alt="add material" className="icon-add-learnlist"/>
-                    Add Material
-                </button>
-                <button className="btn btn-add-learnlist d-flex justify-content-start" onClick={handleAddQuiz}>
-                    <img src="/add.png" alt="add quiz" className="icon-add-learnlist"/>
-                    Add Quiz
-                </button>
+              <button className="btn btn-add-learnlist d-flex justify-content-start" onClick={handleAddMaterial}>
+                <img src="/add.png" alt="add material" className="icon-add-learnlist" />
+                Add Material
+              </button>
+              <button className="btn btn-add-learnlist d-flex justify-content-start" onClick={handleAddQuiz}>
+                <img src="/add.png" alt="add quiz" className="icon-add-learnlist" />
+                Add Quiz
+              </button>
             </div>
           </div>
         </div>
