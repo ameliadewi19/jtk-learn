@@ -8,16 +8,16 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     // Menyimpan nama file dengan menambahkan timestamp
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${file.originalname}`);
   },
 });
 
 // Inisialisasi multer dengan konfigurasi
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Set limit file size 5MB
+  limits: { fileSize: 2 * 1024 * 1024 }, // Set limit file size 2MB
   fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif/;
+    const filetypes = /jpeg|jpg|png/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
 

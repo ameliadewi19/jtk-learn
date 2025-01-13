@@ -9,19 +9,21 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import SidebarPelajar from './components/SidebarPelajar';
 import SidebarPengajar from './components/SidebarPengajar';
+import CoursePengajar from './pages/CoursePengajarPage';
+import CourseOverviewPage from './pages/CourseOverviewPage';
 
 function App() {
   return (
     <UserProvider>
       <Router>
         <Routes>
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <>
                 <LoginPage />
               </>
-            } 
+            }
           />
           <Route
             path="/dashboard-pelajar"
@@ -51,7 +53,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <Navbar />
-                  <SidebarPelajar/>
+                  <SidebarPelajar />
                 </>
               </ProtectedRoute>
             }
@@ -62,7 +64,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <Navbar />
-                  <SidebarPengajar/>
+                  <SidebarPengajar />
                 </>
               </ProtectedRoute>
             }
@@ -73,7 +75,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <Navbar />
-                  <SidebarPelajar/>
+                  <SidebarPelajar />
                 </>
               </ProtectedRoute>
             }
@@ -84,7 +86,40 @@ function App() {
               <ProtectedRoute>
                 <>
                   <Navbar />
-                  <SidebarPengajar/>
+                  <SidebarPengajar />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <CoursePengajar />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-info-course/:id"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <CoursePengajar />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course/:id"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <CourseOverviewPage />
                 </>
               </ProtectedRoute>
             }

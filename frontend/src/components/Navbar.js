@@ -1,12 +1,13 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { UserContext } from '../components/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; 
 
 const Navbar = () => {
   const { user } = useContext(UserContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null); // Reference for the dropdown container
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.clear();
@@ -20,7 +21,7 @@ const Navbar = () => {
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false); 
+        setDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -33,7 +34,7 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg custom-navbar">
       <div className="container-fluid">
-        <a className="navbar-brand d-flex align-items-center" href="/">
+        <a className="navbar-brand d-flex align-items-center" href={user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar'}>
           <img src="/logo512.png" alt="JTK Learn Logo" className="logo" />
         </a>
         <button
@@ -51,20 +52,30 @@ const Navbar = () => {
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
               <a
-                className="nav-link active"
-                aria-current="page"
-                href={user?.role === 'pengajar' ? '/list-course' : '/dashboard'}
+                className={`nav-link ${location.pathname === '/dashboard-pengajar' || location.pathname === '/dashboard-pelajar' ? 'active' : ''}`}
+                href={user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar'}
               >
                 Dashboard
               </a>
             </li>
+            {/* My Courses (only for pelajar) */}
             {user?.role !== 'pengajar' && (
               <li className="nav-item">
-                <a className="nav-link" href="/my-courses">My Courses</a>
+                <a
+                  className={`nav-link ${location.pathname === '/my-courses' ? 'active' : ''}`}
+                  href="/my-courses"
+                >
+                  My Courses
+                </a>
               </li>
             )}
             <li className="nav-item history-quiz">
-              <a className="nav-link" href="/history-quiz">History Quiz</a>
+              <a
+                className={`nav-link ${location.pathname === '/history-quiz' ? 'active' : ''}`}
+                href="/history-quiz"
+              >
+                History Quiz
+              </a>
             </li>
             {/* Dropdown My Account */}
             <li className="nav-name dropdown" ref={dropdownRef}>
@@ -88,7 +99,6 @@ const Navbar = () => {
                 </button>
               )}
             </li>
-            {/* End Dropdown */}
           </ul>
         </div>
       </div>
