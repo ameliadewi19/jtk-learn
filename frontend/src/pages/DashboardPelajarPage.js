@@ -10,7 +10,6 @@ const DashboardPelajar = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
   const { user } = useContext(UserContext);
-  const studentName = localStorage.getItem('nama');
   const navigate = useNavigate();
 
   const fetchCourses = async () => {

@@ -1,0 +1,72 @@
+.nav-tabs {
+    border-bottom: none !important;
+}
+
+.nav-link-tab {
+    border: none !important;
+    background: none !important;
+    color: black !important;
+}
+
+.nav-link-tab:hover::after {
+    content: ''; 
+    position: absolute; 
+    bottom: -3px; 
+    left: 50%; 
+    transform: translateX(-45%); 
+    width: 90%; 
+    height: 3px; 
+    background-color: #E43866; 
+}
+
+.nav-item-tab:hover {
+    font-weight: bold;
+    position: relative; 
+}   
+
+.nav-item-tab .active {
+    font-weight:bolder;
+    font-size: larger;
+    position: relative;
+}
+
+.nav-item-tab .active::after {
+    content: ''; 
+    position: absolute; 
+    bottom: -1px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 105%; 
+    height: 3px; 
+    background-color: #E43866; 
+}
+
+.card-body-mycourse {
+    padding: 16px 16px;
+}
+
+.card-body-mycourse .card-title {
+    margin-bottom: 8px;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.card-body-mycourse .card-text {
+    line-height: 1.2;
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.card-body-mycourse .progress {
+    display: flex;
+    align-items: center;
+    height: 15px;
+    width: 85%;
+}
+
+.card-body-mycourse .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Jarak antara progress bar dan teks */
+}
