@@ -11,6 +11,7 @@ import SidebarPelajar from './components/SidebarPelajar';
 import SidebarPengajar from './components/SidebarPengajar';
 import CoursePengajar from './pages/CoursePengajarPage';
 import CourseOverviewPage from './pages/CourseOverviewPage';
+import MyCourses from './pages/MyCoursesPage';
 
 function App() {
   return (
@@ -32,6 +33,17 @@ function App() {
                 <>
                   <Navbar />
                   <DashboardPelajar />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-courses"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <MyCourses />
                 </>
               </ProtectedRoute>
             }
