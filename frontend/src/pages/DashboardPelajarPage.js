@@ -52,14 +52,16 @@ const DashboardPelajar = () => {
     <div className="container-fluid py-4">
       <div className="container-dashboard">
         <h3 className="greeting-title">Hi, {user.userData.nama}!</h3>
-        <h3 className="courses-title">Courses</h3>
+        <div className="dashboard-flex">
+          <h3 className="courses-title">Courses</h3>
+        </div>
         <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div 
-                key={course.id_course} 
-                className="col-md-3 mb-3 ms-5"
-                onClick={() => handleCourseClick(course.id_course)}  
+              <div
+                key={course.id_course}
+                className="col-12 col-sm-6 col-lg-3"
+                onClick={() => handleCourseClick(course.id_course)}
               >
                 <div className="card">
                   <img
