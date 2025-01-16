@@ -1,11 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
-import ErrorModal from '../components/ErrorModal';
-import SuccessModal from '../components/SuccessModal';
+import MessageModal from '../components/MessageModal';
 
 const CoursePengajarPage = () => {
     const [image, setImage] = useState(null);
@@ -21,22 +19,30 @@ const CoursePengajarPage = () => {
     const { id } = useParams();
     const isEditMode = Boolean(id);
 
-    const [errorModal, setErrorModal] = useState(false);
-    const [successModal, setSuccessModal] = useState(false);
+    const [messageModal, setMessageModal] = useState({
+        show: false,
+        type: '',
+        message: '',
+    });
+    const [showCancelModal, setShowCancelModal] = useState(false);  // Add state for cancel modal
 
-    const handleAddCourse = async (newCourse) => {
+    const handleAddOrUpdate = async (newCourse) => {
         try {
+            setMessageModal({ show: false, type: '', message: '' });
+
             if (!idPengajar || !newCourse.courseName || !newCourse.enrollmentKey || !newCourse.description) {
-                setErrorModal({
+                setMessageModal({
                     show: true,
+                    type: 'error',
                     message: 'Harap lengkapi semua kolom yang diperlukan: Nama Course, Deskripsi, dan Enrollment Key.',
                 });
                 return;
             }
 
             if (newCourse.enrollmentKey.length < 8 || newCourse.enrollmentKey.length > 12) {
-                setErrorModal({
+                setMessageModal({
                     show: true,
+                    type: 'error',
                     message: 'Enrollment key harus memiliki 8-12 karakter.',
                 });
                 return;
@@ -60,11 +66,15 @@ const CoursePengajarPage = () => {
                 ? await api.put(`/courses/${id}`, formData, { headers: { Authorization: `Bearer ${token}` } })
                 : await api.post('/courses', formData, { headers: { Authorization: `Bearer ${token}` } });
 
-            setSuccessModal(true);
+            setMessageModal({
+                show: true,
+                type: 'success',
+                message: isEditMode ? "Course berhasil diperbarui!" : "Course berhasil ditambahkan!",
+            });
 
         } catch (error) {
-            const errorMessage = error.response?.data?.message;
-            setErrorModal({ show: true, message: errorMessage }); 
+            const errorMessage = error.response?.data?.message || 'Terjadi kesalahan';
+            setMessageModal({ show: true, type: 'error', message: errorMessage });
         }
     };
 
@@ -89,20 +99,16 @@ const CoursePengajarPage = () => {
         }
     }, [id]);
 
-    const handleCloseErrorModal = (event) => {
-        event?.preventDefault(); 
-        setErrorModal(false);
-    };
-    
-    const handleCloseSuccessModal = () => {
-        setSuccessModal(false);
-        setTimeout(() => {
+    const handleCloseMessageModal = () => {
+        setMessageModal({ show: false, type: '', message: '' });
+
+        if (messageModal.type === 'success') {
             if (isEditMode) {
                 navigate(`/course/${id}`, { replace: true });
             } else {
                 navigate('/dashboard-pengajar', { replace: true });
             }
-        }, 1000);
+        }
     };
 
     const handleInputChange = (e) => {
@@ -114,22 +120,26 @@ const CoursePengajarPage = () => {
     };
 
     const handleImageChange = (e) => {
+        setMessageModal({ show: false, type: '', message: '' });
+
         const file = e.target.files[0];
         if (file) {
             const validFormats = ['image/jpeg', 'image/png', 'image/jpg'];
             const maxSize = 2 * 1024 * 1024; // 2MB
 
             if (!validFormats.includes(file.type)) {
-                setErrorModal({
+                setMessageModal({
                     show: true,
+                    type: 'error',
                     message: 'Unggah gagal! Gunakan format JPG/PNG/JPEG.',
                 });
                 return;
             }
 
             if (file.size > maxSize) {
-                setErrorModal({
+                setMessageModal({
                     show: true,
+                    type: 'error',
                     message: 'Unggah gagal! Ukuran file maksimal 2MB.',
                 });
                 return;
@@ -146,10 +156,21 @@ const CoursePengajarPage = () => {
             description: formData.description,
             enrollmentKey: formData.enrollmentKey,
         };
-        handleAddCourse(newCourse);
-
+        handleAddOrUpdate(newCourse);
     };
-    
+
+    const handleCancel = () => {
+        setShowCancelModal(true); 
+    };
+
+    const handleConfirmCancel = () => {
+        setShowCancelModal(false); 
+        isEditMode ? navigate(`/course/${id}`) : navigate('/dashboard-pengajar');
+    };
+
+    const handleRejectCancel = () => {
+        setShowCancelModal(false); 
+    };
 
     return (
         <div className="course-pengajar-container">
@@ -174,7 +195,6 @@ const CoursePengajarPage = () => {
                                 <p>No image available</p>
                             )
                         ) : (
-
                             image ? (
                                 <img
                                     src={URL.createObjectURL(image)}
@@ -244,26 +264,39 @@ const CoursePengajarPage = () => {
                             />
                         </div>
                         <div className="button-container">
-                            <div className="button-container">
-                                <button type="submit" className="create-button">
-                                    {isEditMode ? 'Save' : 'Create'}
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                className="create-button"
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+
+                            <button type="submit" className="create-button">
+                                {isEditMode ? 'Save' : 'Create'}
+                            </button>
                         </div>
-                        <ErrorModal
-                            show={errorModal}
-                            message={errorModal.message}
-                            onClose={handleCloseErrorModal}
-                        />
-                        <SuccessModal
-                            show={successModal}
-                            message={isEditMode ? "Course berhasil diperbarui!" : "Course berhasil ditambahkan!"}
-                            onClose={handleCloseSuccessModal}
-                        />
                     </form>
                 </div>
             </div>
-        </div >
+
+            {/* Cancel Confirmation Modal */}
+            <MessageModal
+                show={showCancelModal}
+                type="warning"
+                message={isEditMode ? "Apakah Anda yakin ingin membatalkan perubahan course?" : "Apakah Anda yakin ingin membatalkan penambahan course?"}
+                onConfirm={handleConfirmCancel}
+                onCancel={handleRejectCancel}
+            />
+
+            {/* Message Modal for success or error */}
+            <MessageModal
+                show={messageModal.show}
+                type={messageModal.type}
+                message={messageModal.message}
+                onClose={handleCloseMessageModal}
+            />
+        </div>
     );
 };
 
