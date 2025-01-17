@@ -69,7 +69,9 @@ const DashboardPengajar = () => {
         <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div key={course.id} className="col-12 col-sm-6 col-lg-3">
+              <div 
+              key={course.id} 
+              className="col-12 col-sm-6 col-lg-3">
                 <div
                   className="card"
                   onClick={() => navigate(`/course/${course.id}`)}

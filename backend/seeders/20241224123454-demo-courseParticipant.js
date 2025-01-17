@@ -28,6 +28,14 @@ module.exports = {
         status_penyelesaian: 'In Progress',
         createdAt: new Date(),
         updatedAt: new Date(),
+      },
+      {
+        id_course: 2,
+        id_pelajar: 1,
+        persentase_course: 100,
+        status_penyelesaian: 'Completed',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ]);
   },

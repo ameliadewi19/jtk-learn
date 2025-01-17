@@ -12,6 +12,7 @@ const CourseOverviewPage = () => {
     const { user } = useContext(UserContext);
     const { id } = useParams();
     const token = localStorage.getItem('token');
+    const [progress, setProgress] = useState(null);
 
     const fetchCourseData = async () => {
         try {
@@ -27,8 +28,26 @@ const CourseOverviewPage = () => {
         }
     };
 
+    const fetchProgress = async () => {
+        try {
+            const response = await api.get(`/participant/progress/${id}/${user.userData.id_pelajar}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setProgress(response.data);
+        } catch (error) {
+            setError('Failed to load progress data.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
         fetchCourseData();
+        if (user?.role === 'pelajar') {
+            fetchProgress();
+        }
     }, [id]);
 
     if (loading) {
@@ -42,7 +61,12 @@ const CourseOverviewPage = () => {
     return (
         <div className="course-pengajar-container">
             <div className="back-button">
-                <button className="back-button-text" onClick={() => navigate('/dashboard-pengajar')}>
+                <button
+                    className="back-button-text"
+                    onClick={() =>
+                        navigate(user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar')
+                    }
+                >
                     <span>&larr;</span> Back to Dashboard
                 </button>
                 <div className="back-button-background"></div>
@@ -73,27 +97,67 @@ const CourseOverviewPage = () => {
                         {courseData?.deskripsi || 'Description not available'}
                     </div>
                     <div className="detail-info course-instructor">
-                        Instructor: {user.userData.nama}
+                        Instructor: {courseData?.pengajar?.nama || ''}
                     </div>
-                    <div className="detail-info course-enrollment">
-                        Enrollment Key: {courseData?.enrollment_key || ''}
-                    </div>
-                    <div className="button-overview-container">
-                        <button
-                            type="button"
-                            className="button-overview"
-                            onClick={() => navigate(`/edit-course`)}
-                        >
-                            View Course
-                        </button>
-                        <button
-                            type="button"
-                            className="button-overview"
-                            onClick={() => navigate(`/edit-info-course/${id}`)}
-                        >
-                            Edit Info Course
-                        </button>
-                    </div>
+                    {user?.role === 'pengajar' && (
+                        <>
+                            <div className="detail-info course-enrollment">
+                                Enrollment Key: {courseData?.enrollment_key || ''}
+                            </div>
+                            <div className="button-overview-container">
+                                <button
+                                    type="button"
+                                    className="button-overview"
+                                    onClick={() => navigate(`/edit-course`)}
+                                >
+                                    View Course
+                                </button>
+                                <button
+                                    type="button"
+                                    className="button-overview"
+                                    onClick={() => navigate(`/edit-info-course/${id}`)}
+                                >
+                                    Edit Info Course
+                                </button>
+                            </div>
+                        </>
+                    )}
+                    {user?.role === 'pelajar' && (
+                        <>
+                            <div className="progress-wrapper">
+                                {progress && progress.persentase_course !== null ? (
+                                    <>
+                                        <div className="progress-bar-container">
+                                            <div
+                                                className="progress-bar-fill"
+                                                role="progressbar"
+                                                aria-valuenow={progress.persentase_course}
+                                                aria-valuemin="0"
+                                                aria-valuemax="100"
+                                                style={{
+                                                    width: `${progress.persentase_course}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                        <span className="progress-percentage-text">
+                                            {progress.persentase_course}%
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span>Loading progress...</span>
+                                )}
+                            </div>
+                            <div className="button-overview-container">
+                                <button
+                                    type="button"
+                                    className="button-overview"
+                                    onClick={() => navigate(`/learn-course`)}
+                                >
+                                    {progress?.persentase_course < 100 ? 'Continue Course' : 'View Course'}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
