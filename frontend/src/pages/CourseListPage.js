@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CourseModal from '../components/AddCourseModal';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
@@ -12,6 +13,8 @@ const CourseList = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
   const idPengajar = localStorage.getItem('idPengajar');
+  const navigate = useNavigate();
+  
 
   const fetchCourses = async () => {
     try {
@@ -46,6 +49,10 @@ const CourseList = () => {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  const handleCourseClick = () => {
+    navigate(`/edit-course`);
+  };
 
 
   const handleAddCourse = async (newCourse) => {
@@ -167,7 +174,7 @@ const CourseList = () => {
       </div>
       <div className="row">
         {courseList.map((course) => (
-          <div key={course.id} className="col-md-3 mb-4">
+          <div key={course.id} className="col-md-3 mb-4" onClick={() => handleCourseClick(course.id_course)}>
             <div className="card h-100 shadow-sm position-relative">
               <button
                   className="btn btn-sm btn-warning position-absolute top-0 end-0 m-2 me-5"

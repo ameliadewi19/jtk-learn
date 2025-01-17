@@ -7,7 +7,7 @@ const { authorizeRole } = require('../middleware/authorizeRole');
 
 // Routes for Quiz
 router.get('/', getAllQuiz); // Get all quizzes
-router.post('/addquiz', authorizeRole(['pengajar']), createQuiz); // Create a new quiz
+router.post('/', authorizeRole(['pengajar']), createQuiz); // Create a new quiz
 router.put('/:id', authorizeRole(['pengajar']), updateQuiz); // Update quiz by ID
 router.delete('/:id', authorizeRole(['pengajar']), deleteQuiz); // Delete quiz by ID
 

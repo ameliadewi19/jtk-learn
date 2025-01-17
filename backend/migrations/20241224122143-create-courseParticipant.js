@@ -50,4 +50,3 @@ module.exports = {
     await queryInterface.dropTable('courseParticipant');
   },
 };
-

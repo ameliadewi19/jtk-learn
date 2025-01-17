@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
+import { useNavigate } from 'react-router-dom';
 
-const DashboardPelajar = () => {
+const DashboardPengajar = () => {
   const [courseList, setCourseList] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
@@ -14,7 +14,7 @@ const DashboardPelajar = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await api.get('/courses', {
+      const response = await api.get(`/courses/pengajar/${user.userData.kode_dosen}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -36,13 +36,13 @@ const DashboardPelajar = () => {
     }
   };
 
+  const handleCreateCourse = () => {
+    navigate('/create-course');
+  };
+
   useEffect(() => {
     fetchCourses();
   }, []);
-
-  const handleCourseClick = () => {
-    navigate(`/learn-course`);
-  };
 
   if (loading) {
     return <div className="text-center mt-5">Loading...</div>;
@@ -54,16 +54,26 @@ const DashboardPelajar = () => {
         <h3 className="greeting-title">Hi, {user.userData.nama}!</h3>
         <div className="dashboard-flex">
           <h3 className="courses-title">Courses</h3>
+          <button
+            className="add-course-button"
+            onClick={handleCreateCourse}
+          >
+            <img
+              src="/add.png"
+              alt="Add Course"
+              className="add-course-icon"
+            />
+            Add Course
+          </button>
         </div>
         <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div
-                key={course.id_course}
-                className="col-12 col-sm-6 col-lg-3"
-                onClick={() => handleCourseClick(course.id_course)}
-              >
-                <div className="card">
+              <div key={course.id} className="col-12 col-sm-6 col-lg-3">
+                <div
+                  className="card"
+                  onClick={() => navigate(`/course/${course.id}`)}
+                >
                   <img
                     src={course.image}
                     className="card-img-top"
@@ -85,4 +95,4 @@ const DashboardPelajar = () => {
   );
 };
 
-export default DashboardPelajar;
+export default DashboardPengajar;

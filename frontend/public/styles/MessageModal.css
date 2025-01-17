@@ -1,0 +1,57 @@
+.custom-modal {
+    background-color: #fff;
+    border-radius: 8px;
+    text-align: center;
+    padding: 20px;
+}
+  
+.custom-modal-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+}
+  
+.custom-modal-title {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+  
+.custom-modal-message {
+    margin-bottom: 20px;
+}
+  
+.custom-modal-button {
+    background-color: #6488EA !important; 
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+  
+.custom-modal-button:hover {
+    background-color: #5072c9 !important;
+}
+
+.custom-modal-button.no-button {
+    background-color:rgb(234, 100, 100) !important; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+  }
+  
+  .custom-modal-button.yes-button {
+    background-color: #6488EA !important;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
