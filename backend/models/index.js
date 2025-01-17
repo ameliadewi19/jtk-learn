@@ -6,9 +6,12 @@ const User = require('./user')(sequelize, DataTypes);
 const Course = require('./course')(sequelize, DataTypes);
 const Pengajar = require('./pengajar')(sequelize, DataTypes);
 const Pelajar = require('./pelajar')(sequelize, DataTypes);
+const Jawaban = require('./jawaban')(sequelize, DataTypes);
+const Pertanyaan = require('./pertanyaan')(sequelize, DataTypes);
+const Quiz = require('./quiz')(sequelize, DataTypes);
 
 // Pastikan asosiasi dijalankan dengan benar
-const models = { User, Course, Pengajar, Pelajar };
+const models = { User, Course, Pengajar, Pelajar, Jawaban, Pertanyaan, Quiz };
 
 // Panggil method `associate` pada setiap model jika ada
 Object.keys(models).forEach((modelName) => {

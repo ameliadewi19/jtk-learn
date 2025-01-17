@@ -32,11 +32,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
             deskripsi_quiz: {
-                type: Sequelize.TEXT,
+                type: DataTypes.TEXT,
                 allowNull: false,
             },
             durasi: {
-                type: Sequelize.INTEGER,
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
         },
