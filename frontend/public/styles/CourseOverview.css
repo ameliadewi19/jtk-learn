@@ -101,3 +101,55 @@
 }
 
 
+.button-enroll-container {
+    display: flex; 
+    justify-content: left; 
+    align-items: left; 
+    gap: 20px; 
+    margin-top: none; 
+}
+
+.button-enroll {
+    position: relative;
+    background-color: #ff6384;
+    color: black;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    height: 40px; 
+    min-height: 40px; 
+    line-height: 40px; 
+    display: inline-flex; 
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease; 
+}
+
+.button-enroll:hover {
+    background-color: #ff4a6e;
+}
+
+.enroll-form input.form-control {
+    width: 100%; 
+    max-width: 280px; 
+    height: 40px; 
+    padding: 8px 10px; 
+    border: 1px solid black; 
+    border-radius: 5px; 
+    font-size: 14px; 
+    box-shadow: none; 
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #EFEFEF;
+}
+
+.enroll-form {
+    display: flex; 
+    justify-content: left; 
+    align-items: left; 
+    gap: 20px; 
+    margin-top: 20px; 
+}
+

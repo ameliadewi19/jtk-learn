@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
+import MessageModal from '../components/MessageModal';
 
 const CourseOverviewPage = () => {
     const [courseData, setCourseData] = useState(null);
@@ -13,6 +14,14 @@ const CourseOverviewPage = () => {
     const { id } = useParams();
     const token = localStorage.getItem('token');
     const [progress, setProgress] = useState(null);
+    const [enrollmentKey, setEnrollmentKey] = useState("");
+    const idCourse = courseData?.id_course;
+    const idPelajar = user.userData.id_pelajar;
+    const [messageModal, setMessageModal] = useState({
+        show: false,
+        type: '',
+        message: '',
+    });
 
     const fetchCourseData = async () => {
         try {
@@ -37,11 +46,61 @@ const CourseOverviewPage = () => {
             });
             setProgress(response.data);
         } catch (error) {
-            setError('Failed to load progress data.');
+            // If error is 404, it means the user has not enrolled in the course
+            setProgress(null);
         } finally {
             setLoading(false);
         }
     }
+
+    const handleEnroll = async () => {
+        try {
+            if (!enrollmentKey) {
+                setMessageModal({
+                    show: true,
+                    type: "error",
+                    message: "Silakan masukkan enrollment key",
+                });
+                return;
+            }
+
+            const response = await api.post(
+                "/participant/enroll",
+                {
+                    id_course: idCourse,
+                    id_pelajar: idPelajar,
+                    enrollment_key: enrollmentKey,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.status === 201) {
+                setMessageModal({
+                    show: true,
+                    type: "success",
+                    message: response.data.message,
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            setMessageModal({
+                show: true,
+                type: "error",
+                message: error.response?.data.message || "Terjadi kesalahan pada server.",
+            });
+        }
+    };
+
+    const handleCloseMessageModal = () => {
+        setMessageModal({ show: false, type: '', message: '' });
+        if (messageModal.type === 'success') {
+            navigate(`/learn-course/${id}`);
+        }
+    };
 
     useEffect(() => {
         fetchCourseData();
@@ -78,7 +137,6 @@ const CourseOverviewPage = () => {
                         {courseData?.gambar_course ? (
                             <img
                                 src={`/uploads/images/${courseData.gambar_course}`}
-
                                 className="image-preview"
                             />
                         ) : (
@@ -124,9 +182,9 @@ const CourseOverviewPage = () => {
                     )}
                     {user?.role === 'pelajar' && (
                         <>
-                            <div className="progress-wrapper">
-                                {progress && progress.persentase_course !== null ? (
-                                    <>
+                            {progress !== null ? (
+                                <>
+                                    <div className="progress-wrapper">
                                         <div className="progress-bar-container">
                                             <div
                                                 className="progress-bar-fill"
@@ -142,23 +200,46 @@ const CourseOverviewPage = () => {
                                         <span className="progress-percentage-text">
                                             {progress.persentase_course}%
                                         </span>
-                                    </>
-                                ) : (
-                                    <span>Loading progress...</span>
-                                )}
-                            </div>
-                            <div className="button-overview-container">
-                                <button
-                                    type="button"
-                                    className="button-overview"
-                                    onClick={() => navigate(`/learn-course`)}
-                                >
-                                    {progress?.persentase_course < 100 ? 'Continue Course' : 'View Course'}
-                                </button>
-                            </div>
+                                    </div>
+                                    <div className="button-overview-container">
+                                        <button
+                                            type="button"
+                                            className="button-overview"
+                                            onClick={() => navigate(`/learn-course/${id}`)}
+                                        >
+                                            {progress.persentase_course < 100 ? 'Continue Course' : 'View Course'}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="enroll-form">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Enrollment key"
+                                        value={enrollmentKey}
+                                        onChange={(e) => setEnrollmentKey(e.target.value)}
+                                    />
+                                    <div className="button-enroll-container">
+                                        <button
+                                            type="button"
+                                            className="button-enroll"
+                                            onClick={() => handleEnroll()}
+                                        >
+                                            Enroll
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
+                <MessageModal
+                    show={messageModal.show}
+                    type={messageModal.type}
+                    message={messageModal.message}
+                    onClose={handleCloseMessageModal}
+                />
             </div>
         </div>
     );

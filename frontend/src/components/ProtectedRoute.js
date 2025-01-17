@@ -1,46 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api'; // Import api instance
+import { UserContext } from './UserContext'; 
+import api from '../services/api'; 
 
-const ProtectedRoute = ({ children }) => {
-  const [hasAccess, setHasAccess] = useState(false);
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAccess = async () => {
+    if (!user) {
+      const storedUser = localStorage.getItem('user');
       const token = localStorage.getItem('token');
 
-      if (!token) {
-        navigate('/'); // Redirect ke login jika token tidak ada
-        return;
+      if (!storedUser || !token) {
+        navigate('/'); // Arahkan ke login jika tidak ada data
       }
+    }
+  }, [user, navigate]);
 
-      try {
-        const response = await api.get('/protected-route', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.data === 'You have access to this route') {
-          setHasAccess(true);
-        } else {
-          navigate('/');
-        }
-      } catch (error) {
-        console.error('Access validation failed:', error);
-        navigate('/');
-      }
-    };
-
-    checkAccess();
-  }, [navigate]);
-
-  if (!hasAccess) {
+  if (!user) {
     return <p>Loading...</p>;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    navigate('/'); // Arahkan ke login jika role tidak sesuai
+    return null;
   }
 
   return <>{children}</>;
 };
+
 
 export default ProtectedRoute;

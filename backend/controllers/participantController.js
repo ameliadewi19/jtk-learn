@@ -50,7 +50,32 @@ const getProgressByCourse= async (req, res) => {
     }
 };
 
+const enrollCourse = async (req, res) => {
+    try {
+        const { id_course, id_pelajar, enrollment_key } = req.body;
+
+        const course = await Course.findOne({ where: { id_course } });
+        if (course.enrollment_key !== enrollment_key) {
+            return res.status(400).json({ message: 'Enrollment key yang Anda masukkan tidak valid. Silakan coba lagi.' });
+        }
+
+        await CourseParticipant.create({
+            id_course: course.id_course,
+            id_pelajar,
+            persentase_course: 0,
+            status_penyelesaian: 'In Progress',
+        });
+
+        return res.status(201).json({ message: 'Enroll berhasil! Anda sekarang dapat mengakses materi dan kuis course ini.' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
+    }
+}
+
+
 module.exports = {
     getCParticipantByStudent,
-    getProgressByCourse
+    getProgressByCourse,
+    enrollCourse
 }
