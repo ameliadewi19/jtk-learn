@@ -26,9 +26,16 @@ const getAllCourses = async (req, res) => {
 const getCourseById = async (req, res) => {
   try {
     const { id } = req.params;
+
     const course = await Course.findOne({
       where: { id_course: id },
-      include: [{ model: Pengajar, as: 'pengajar' }],
+      include: [
+        {
+          model: Pengajar,
+          as: 'pengajar',
+          attributes: ['nama'], 
+        },
+      ],
     });
 
     if (!course) {
@@ -41,6 +48,7 @@ const getCourseById = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch the course.' });
   }
 };
+
 
 const createCourse = async (req, res) => {
   try {

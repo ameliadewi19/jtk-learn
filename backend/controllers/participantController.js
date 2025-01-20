@@ -33,6 +33,24 @@ const getCParticipantByStudent = async (req, res) => {
     }
 };
 
+const getProgressByCourse= async (req, res) => {
+    try {
+        const { id_course, id_pelajar } = req.params;
+        const courseParticipant = await CourseParticipant.findOne({
+            where: { id_course, id_pelajar },
+        });
+        if (!courseParticipant) {
+            return res.status(404).json({ message: 'No progress found for this student.' });
+        }
+      
+        res.status(200).json(courseParticipant);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch progress for the student.' });
+    }
+};
+
 module.exports = {
-    getCParticipantByStudent
+    getCParticipantByStudent,
+    getProgressByCourse
 }
