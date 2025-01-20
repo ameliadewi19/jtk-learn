@@ -22,7 +22,7 @@ app.use('/auth', authRouter);
 app.use('/users', authenticate, userRouter);
 app.use('/courses', authenticate, authorizeRole(['pengajar','pelajar']), courseRouter);
 app.use('/materials', authenticate, authorizeRole(['pengajar','pelajar']), materialRouter);
-app.use('/participant', authenticate, authorizeRole(['pengajar','pelajar']), participantRouter);
+app.use('/participant', authenticate, authorizeRole(['pelajar']), participantRouter);
 
 // To check authentication
 app.get('/protected-route', authenticate, (req, res) => {

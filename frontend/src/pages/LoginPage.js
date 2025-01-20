@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -7,8 +7,8 @@ import { UserContext } from '../components/UserContext';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { setUser } = useContext(UserContext);
-  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserContext);
+  const navigate = useNavigate();   
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -39,6 +39,7 @@ const LoginPage = () => {
       });
     }
   };
+
 
   return (
     <main className='font-montserrat'>

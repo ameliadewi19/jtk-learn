@@ -1,36 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../services/api";
+import { UserContext } from '../components/UserContext';
 
 const SidebarPelajar = () => {
-  // Dummy data untuk course, materi, dan quiz
   const [course, setCourse] = useState({
-    name: "Pengenalan Pemrograman Web",
+    name: '',
     materi: [],
   });
-  const id_course = 1; // Dummy id_course untuk testing
-
-  // const [course, setCourse] = useState({
-  //   name: "Matematika Diskrit",
-  //   materi: [
-  //     { id: 1, name: "Logika Proposisi", type: "materi" },
-  //     { id: 2, name: "Kuis Logika Proposisi", type: "quiz" },
-  //     { id: 3, name: "Dummy", type: "quiz" },
-  //   ],
-  // });
-
+  const { id } = useParams();
+  const [courseData, setCourseData] = useState({});
   const [selectedMateri, setSelectedMateri] = useState(course.materi[0]?.id || null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+  const { user } = useContext(UserContext);
+
+  const fetchCourseData = async () => {
+    try {
+      const response = await api.get(`/courses/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCourseData(response.data);
+    } catch (error) {
+      console.error('Error fetching course data:', error);
+    }
+  };
 
   const fetchMateriByCourse = async () => {
     try {
-      const id_course = 1; // Dummy id_course untuk testing
-
-      const response = await api.get(`/materials/course/${id_course}`, {
+      const response = await api.get(`/materials/course/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -52,11 +55,29 @@ const SidebarPelajar = () => {
     }
   };
 
-  useEffect(() => {
-    if (id_course) {
-      fetchMateriByCourse();
+  const verifyEnrollment = async () => {
+    try {
+      console.log(user.userData.id_pelajar);
+      console.log(id);
+      await api.get(`/participant/progress/${id}/${user.userData.id_pelajar}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      if (error.response?.status === 403) {
+        navigate(`/course/${id}`);
+      }
     }
-  }, [id_course]);
+  };
+
+  useEffect(() => {
+    if (id) {
+      verifyEnrollment();
+      fetchMateriByCourse();
+      fetchCourseData();
+    }
+  }, [id]);
 
   const handleClick = (item) => {
     setSelectedMateri(item.id);
@@ -88,7 +109,7 @@ const SidebarPelajar = () => {
 
         <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} id="sidebarMenu">
           <div className="sidebar-container d-flex flex-column p-3">
-            <h4 className="course-title">{course.name}</h4>
+            <h4 className="course-title">{courseData.nama_course}</h4>
             <div className="d-flex align-items-center justify-content-center my-3">
               <div className="progress" style={{ height: "10px", width: "90%" }}>
                 <div

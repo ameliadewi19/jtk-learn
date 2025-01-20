@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { UserContext } from '../components/UserContext';
-import { useNavigate, useLocation } from 'react-router-dom'; 
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const { user } = useContext(UserContext);
@@ -34,7 +34,10 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg custom-navbar">
       <div className="container-fluid">
-        <a className="navbar-brand d-flex align-items-center" href={user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar'}>
+        <a
+          className="navbar-brand d-flex align-items-center"
+          onClick={() => navigate(user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar')}
+        >
           <img src="/logo512.png" alt="JTK Learn Logo" className="logo" />
         </a>
         <button
@@ -53,7 +56,7 @@ const Navbar = () => {
             <li className="nav-item">
               <a
                 className={`nav-link ${location.pathname === '/dashboard-pengajar' || location.pathname === '/dashboard-pelajar' ? 'active' : ''}`}
-                href={user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar'}
+                onClick={() => navigate(user?.role === 'pengajar' ? '/dashboard-pengajar' : '/dashboard-pelajar')}
               >
                 Dashboard
               </a>
@@ -63,7 +66,7 @@ const Navbar = () => {
               <li className="nav-item">
                 <a
                   className={`nav-link ${location.pathname === '/my-courses' ? 'active' : ''}`}
-                  href="/my-courses"
+                  onClick={() => navigate('/my-courses')}
                 >
                   My Courses
                 </a>
@@ -72,7 +75,7 @@ const Navbar = () => {
             <li className="nav-item history-quiz">
               <a
                 className={`nav-link ${location.pathname === '/history-quiz' ? 'active' : ''}`}
-                href="/history-quiz"
+                onClick={() => navigate('/history-quiz')}
               >
                 History Quiz
               </a>

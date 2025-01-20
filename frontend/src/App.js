@@ -18,92 +18,77 @@ function App() {
         <Routes>
           <Route
             path="/"
+            element={<LoginPage />}
+          />
+          <Route
+            path="*"
             element={
               <>
-                <LoginPage />
+                <Navbar />
+                <Routes>
+                  <Route
+                    path="/dashboard-pelajar"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <DashboardPelajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/learn-course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <SidebarPelajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar', 'pengajar']}>
+                        <CourseOverviewPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard-pengajar"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <DashboardPengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/edit-course"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <SidebarPengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/create-course"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <CoursePengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/edit-info-course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <CoursePengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
               </>
             }
           />
-          <Route
-            path="/dashboard-pelajar"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <DashboardPelajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard-pengajar"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <DashboardPengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/learn-course"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <SidebarPelajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit-course"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <SidebarPengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/create-course"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <CoursePengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit-info-course/:id"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <CoursePengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/course/:id"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <CourseOverviewPage />
-                </>
-              </ProtectedRoute>
-            }
-          />
         </Routes>
-    </Router>
-    </UserProvider >
+      </Router>
+    </UserProvider>
   );
 }
 
