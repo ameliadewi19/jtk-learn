@@ -82,7 +82,7 @@ const CourseOverviewPage = () => {
                         <button
                             type="button"
                             className="button-overview"
-                            onClick={() => navigate(`/edit-course`)}
+                            onClick={() => navigate(`/edit-course/${id}`)}
                         >
                             View Course
                         </button>

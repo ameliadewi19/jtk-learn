@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Accordion, Card, Dropdown } from "react-bootstrap";
+import { FaGripVertical } from 'react-icons/fa';
 
 const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
     const defaultQuestions = [
@@ -19,6 +20,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
     const [duration, setDuration] = useState('');
     const [questions, setQuestions] = useState(defaultQuestions);
     const [answers, setAnswers] = useState(defaultAnswers);
+    const [draggedQuestionIndex, setDraggedQuestionIndex] = useState(null);
 
     useEffect(() => {
         if (initialData) {
@@ -33,6 +35,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const formData = {
+            id_quiz: initialData?.id_quiz,
             id_course: 1,
             nama_quiz: quizName,
             deskripsi_quiz: description,
@@ -68,6 +71,22 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
         setAnswers(newAnswers);
     };
 
+    const handleDragStart = (index) => {
+        setDraggedQuestionIndex(index);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (index) => {
+        const newQuestions = [...questions];
+        const [draggedQuestion] = newQuestions.splice(draggedQuestionIndex, 1);
+        newQuestions.splice(index, 0, draggedQuestion);
+        setQuestions(newQuestions);
+        setDraggedQuestionIndex(null);
+    };
+
     return (
         <div
             className={`modal fade ${show ? 'show d-block' : ''}`}
@@ -80,8 +99,8 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
                         <h5 className="modal-title">{initialData ? 'Edit Quiz' : 'Add Quiz'}</h5>
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
-                    <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                        <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit}>
+                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                             <div className="mb-3 row">
                                 <label className="col-sm-2 col-form-label">Name</label>
                                 <div className="col-sm-10">
@@ -124,10 +143,19 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
                             <div className="mb-3">
                                 <Accordion className="custom-accordion">
                                     {questions.map((question, qIndex) => (
-                                        <Card border='light' className="custom-accordion-card" key={qIndex}>
+                                        <Card
+                                            border='light'
+                                            className="custom-accordion-card"
+                                            key={qIndex}
+                                            draggable
+                                            onDragStart={() => handleDragStart(qIndex)}
+                                            onDragOver={handleDragOver}
+                                            onDrop={() => handleDrop(qIndex)}
+                                        >
                                             <Accordion.Item eventKey={qIndex.toString()} className="custom-accordion-item">
                                                 <Card.Header>
                                                     <Accordion.Header>
+                                                        <FaGripVertical style={{ cursor: 'move', marginRight: '10px' }} />
                                                         {question.jenis_pertanyaan === 'pilihan_ganda' && 'Multiple Choice Question'}
                                                         {question.jenis_pertanyaan === 'jawaban_singkat' && 'Short Answer Question'}
                                                         {question.jenis_pertanyaan === 'operasi_matematika' && 'Mathematic Question'}
@@ -174,7 +202,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
                                                                     placeholder='Content'
                                                                     required
                                                                 />
-                                                                <Dropdown onSelect={(value) => handleAnswerChange(qIndex, aIndex, 'status_jawaban', value)} style={{ width: '20%' }}>
+                                                                <Dropdown onSelect={(value) => handleAnswerChange(qIndex, aIndex, 'status_jawaban', value)} align="start" style={{ width: '20%' }}>
                                                                     <Dropdown.Toggle
                                                                         variant="light"
                                                                         className="form-control"
@@ -204,12 +232,12 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
                                     ))}
                                 </Accordion>
                             </div>
-                        </form>
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn-danger fw-bold me-3 equal-width-button" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn-danger fw-bold equal-width-button">Save</button>
-                    </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn-danger fw-bold me-2 equal-width-button" onClick={onClose}>Cancel</button>
+                            <button type="submit" className="btn-danger fw-bold equal-width-button">Save</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

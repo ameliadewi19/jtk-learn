@@ -1,12 +1,72 @@
 const { Quiz, Pertanyaan, Jawaban, sequelize } = require('../models');
-const { createPertanyaan, updatePertanyaan } = require('./pertanyaanController');
-const { createJawaban, updateJawaban } = require('./jawabanController');
+const { getAllPertanyaan, createPertanyaan, updatePertanyaan } = require('./pertanyaanController');
+const { getJawabanByIdPertanyaan, createJawaban, updateJawaban } = require('./jawabanController');
 
 // get all quiz
 const getAllQuiz = async (req, res) => {
     try {
         const quiz = await Quiz.findAll();
         res.status(200).json(quiz);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// get quiz by course id
+const getQuizByCourseId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const quiz = await Quiz.findAll({ where: { id_course: id } });
+        res.status(200).json(quiz);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// get quiz data by id
+const getQuizById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const quiz = await Quiz.findByPk(id);
+
+        if (!quiz) {
+            return res.status(404).json({ error: 'Quiz not found' });
+        }
+
+        // Fetch all pertanyaan for the quiz
+        const pertanyaan = await getAllPertanyaan(id);
+
+        // Fetch all jawaban for each pertanyaan
+        const jawabanPromises = pertanyaan.map(async (pertanyaanItem) => {
+            const jawaban = await getJawabanByIdPertanyaan(pertanyaanItem.id_pertanyaan);
+            return jawaban;
+        });
+
+        const jawaban = await Promise.all(jawabanPromises);
+
+        const formattedQuiz = {
+            id_quiz: quiz.id_quiz,
+            id_course: quiz.id_course,
+            nama_quiz: quiz.nama_quiz,
+            deskripsi_quiz: quiz.deskripsi_quiz,
+            durasi: quiz.durasi,
+            pertanyaan: pertanyaan.map((pertanyaanItem) => ({
+                nama_pertanyaan: pertanyaanItem.nama_pertanyaan,
+                konten_pertanyaan: pertanyaanItem.konten_pertanyaan,
+                jenis_pertanyaan: pertanyaanItem.jenis_pertanyaan,
+            })),
+            jawaban: jawaban.map((jawabanList) =>
+                jawabanList.map((jawabanItem) => ({
+                    nama_jawaban: jawabanItem.nama_jawaban,
+                    konten_jawaban: jawabanItem.konten_jawaban,
+                    status_jawaban: jawabanItem.status_jawaban,
+                }))
+            ),
+        };
+
+        res.status(200).json(formattedQuiz);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
@@ -112,6 +172,8 @@ const deleteQuiz = async (req, res) => {
 
 module.exports = {
     getAllQuiz,
+    getQuizByCourseId,
+    getQuizById,
     createQuiz,
     updateQuiz,
     deleteQuiz

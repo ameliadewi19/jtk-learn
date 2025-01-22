@@ -1,18 +1,16 @@
 const { Pertanyaan, Quiz } = require('../models');
 
 // get all pertanyaan for one quiz
-const getAllPertanyaan = async (req, res) => {
+const getAllPertanyaan = async (id_quiz) => {
     try {
-        const { id_quiz } = req.params;
         const pertanyaan = await Pertanyaan.findAll({
             where: { id_quiz },
             include: [{ model: Quiz, as: 'quiz' }],
         });
-
-        res.status(200).json(pertanyaan);
+        return pertanyaan;
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        throw new Error(error.message);
     }
 };
 

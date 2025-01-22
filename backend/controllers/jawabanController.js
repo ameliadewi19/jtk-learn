@@ -1,22 +1,13 @@
 const { Jawaban, Pertanyaan } = require('../models');
 
-// get all jawaban for multiple choice question (where pertanyaan.jenis_pertanyaan = 'pilihan_ganda')
-const getAllPilihanJawaban = async (req, res) => {
+// get all jawaban by id pertanyaan
+const getJawabanByIdPertanyaan = async (id_pertanyaan) => {
     try {
-        const jawaban = await Jawaban.findAll({
-            include: [
-                {
-                    model: Pertanyaan,
-                    as: 'pertanyaan',
-                    where: { jenis_pertanyaan: 'pilihan_ganda' },
-                },
-            ],
-        });
-
-        res.status(200).json(jawaban);
+        const jawaban = await Jawaban.findAll({ where: { id_pertanyaan } });
+        return jawaban;
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        throw new Error(error.message);
     }
 };
 
@@ -43,7 +34,7 @@ const updateJawaban = async (id, nama_jawaban, konten_jawaban, status_jawaban, t
 };
 
 module.exports = {
-    getAllPilihanJawaban,
+    getJawabanByIdPertanyaan,
     createJawaban,
     updateJawaban
 };
