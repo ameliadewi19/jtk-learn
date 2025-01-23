@@ -13,7 +13,7 @@ const SidebarPengajar = () => {
     name: "",
     items: [],
   });
-  const [selectedMateri, setSelectedMateri] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
@@ -39,7 +39,7 @@ const SidebarPengajar = () => {
       console.error('Error fetching course:', error);
       Swal.fire('Error', 'Failed to fetch course. Please try again later.', 'error');
     }
-  }
+  };
 
   const fetchMateriByCourse = async () => {
     try {
@@ -115,7 +115,7 @@ const SidebarPengajar = () => {
   }, [id]);
 
   const handleClick = (item) => {
-    setSelectedMateri(item.id);
+    setSelectedItem(item.id);
   };
 
   const handleDropdownToggle = (id) => {
@@ -233,7 +233,7 @@ const SidebarPengajar = () => {
       Swal.fire('Error', 'Failed to submit quiz. Please try again later.', 'error');
     }
     setShowQuizModal(false);
-    fetchQuizByCourse();
+    fetchQuizByCourse(); // Refetch quiz data after submission
   };
 
   const toggleSidebar = () => {
@@ -297,7 +297,7 @@ const SidebarPengajar = () => {
               {course.items.map((item) => (
                 <li
                   key={item.id}
-                  className={`learn-list-item d-flex align-items-center ${selectedMateri === item.id ? "active" : ""}`}
+                  className={`learn-list-item d-flex align-items-center ${selectedItem === item.id ? "active" : ""}`}
                   onClick={() => handleClick(item)}
                   style={{ cursor: "pointer" }}
                   draggable

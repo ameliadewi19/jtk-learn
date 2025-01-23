@@ -47,7 +47,7 @@ function App() {
             }
           />
           <Route
-            path="/learn-course"
+            path="/learn-course/:id"
             element={
               <ProtectedRoute>
                 <>
