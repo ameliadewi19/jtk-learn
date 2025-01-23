@@ -6,10 +6,11 @@ import DashboardPelajar from './pages/DashboardPelajarPage';
 import DashboardPengajar from './pages/DashboardPengajarPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import SidebarPelajar from './components/SidebarPelajar';
+import MempelajariCoursePage from './pages/MempelajariCoursePage';
 import SidebarPengajar from './components/SidebarPengajar';
 import CoursePengajar from './pages/CoursePengajarPage';
 import CourseOverviewPage from './pages/CourseOverviewPage';
+import MyCoursesPage from './pages/MyCoursesPage';
 
 function App() {
   return (
@@ -52,7 +53,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <Navbar />
-                  <SidebarPelajar />
+                  <MempelajariCoursePage />
                 </>
               </ProtectedRoute>
             }
@@ -97,6 +98,17 @@ function App() {
                 <>
                   <Navbar />
                   <CourseOverviewPage />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-courses"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <MyCoursesPage />
                 </>
               </ProtectedRoute>
             }
