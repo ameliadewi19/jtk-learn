@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -21,7 +21,7 @@ const SidebarPengajar = () => {
   const [quizInitialData, setQuizInitialData] = useState(null);
   const [isEditQuiz, setIsEditQuiz] = useState(false);
   const token = localStorage.getItem('token');
-  let incrementalId = 0;
+  const incrementalId = useRef(0); // Use useRef for incrementalId
 
   const fetchCourse = async () => {
     try {
@@ -49,20 +49,16 @@ const SidebarPengajar = () => {
         },
       });
 
-      const mappedMateri = response.data.map((materi) => ({
-        id: incrementalId++,
+      return response.data.map(materi => ({
+        id: incrementalId.current++,
         id_item: materi.id_materi,
         name: materi.nama_materi,
         type: "materi",
       }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        items: mappedMateri,
-      }));
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      return [];
     }
   };
 
@@ -74,20 +70,16 @@ const SidebarPengajar = () => {
         },
       });
 
-      const mappedQuiz = response.data.map((quiz) => ({
-        id: incrementalId++,
+      return response.data.map(quiz => ({
+        id: incrementalId.current++,
         id_item: quiz.id_quiz,
         name: quiz.nama_quiz,
         type: 'quiz',
       }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        items: [...prevCourse.items, ...mappedQuiz],
-      }));
     } catch (error) {
       console.error('Error fetching quiz:', error);
       Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
+      return [];
     }
   };
 
@@ -106,11 +98,15 @@ const SidebarPengajar = () => {
     }
   };
 
+  const fetchAllData = async () => {
+    const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
+    setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
+  };
+
   useEffect(() => {
     if (id) {
       fetchCourse();
-      fetchMateriByCourse();
-      fetchQuizByCourse();
+      fetchAllData();
     }
   }, [id]);
 
@@ -194,20 +190,17 @@ const SidebarPengajar = () => {
               ...prevCourse,
               items: prevCourse.items.map((item) => {
                 if (item.id_item === data.id_quiz) {
-                  return { ...item, name: data.name };
+                  return { ...item, name: data.nama_quiz };
                 }
                 return item;
-              }
-              ),
+              }),
             }));
             Swal.fire('Success', 'Quiz has been updated successfully.', 'success');
-          }
-          )
+          })
           .catch((error) => {
             console.error('Error updating quiz:', error);
             Swal.fire('Error', 'Failed to update quiz. Please try again later.', 'error');
-          }
-          );
+          });
       } else {
         api.post('/quizzes', data, {
           headers: {
@@ -217,16 +210,14 @@ const SidebarPengajar = () => {
           .then((response) => {
             setCourse((prevCourse) => ({
               ...prevCourse,
-              items: [...prevCourse.items, { id: incrementalId++, id_item: response.data.id_quiz, name: data.name, type: 'quiz' }],
+              items: [...prevCourse.items, { id: incrementalId.current++, id_item: response.data.id_quiz, name: data.nama_quiz, type: 'quiz' }],
             }));
             Swal.fire('Success', 'Quiz has been created successfully.', 'success');
-          }
-          )
+          })
           .catch((error) => {
             console.error('Error creating quiz:', error);
             Swal.fire('Error', 'Failed to create quiz. Please try again later.', 'error');
-          }
-          );
+          });
       }
     } catch (error) {
       console.error('Error submitting quiz:', error);

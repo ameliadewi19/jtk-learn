@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -14,7 +14,7 @@ const SidebarPelajar = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem('token');
-  let incrementalId = 0;
+  const incrementalId = useRef(0); // Use useRef for incrementalId
 
   const fetchCourse = async () => {
     try {
@@ -42,20 +42,16 @@ const SidebarPelajar = () => {
         },
       });
 
-      const mappedMateri = response.data.map((materi) => ({
-        id: incrementalId++,
+      return response.data.map(materi => ({
+        id: incrementalId.current++,
         id_item: materi.id_materi,
         name: materi.nama_materi,
         type: "materi",
       }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        items: mappedMateri,
-      }));
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      return [];
     }
   };
 
@@ -67,28 +63,28 @@ const SidebarPelajar = () => {
         },
       });
 
-      const mappedQuiz = response.data.map((quiz) => ({
-        id: incrementalId++,
+      return response.data.map(quiz => ({
+        id: incrementalId.current++,
         id_item: quiz.id_quiz,
         name: quiz.nama_quiz,
         type: 'quiz',
       }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        items: [...prevCourse.items, ...mappedQuiz],
-      }));
     } catch (error) {
       console.error('Error fetching quiz:', error);
       Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
+      return [];
     }
+  };
+
+  const fetchAllData = async () => {
+    const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
+    setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
   };
 
   useEffect(() => {
     if (id) {
       fetchCourse();
-      fetchMateriByCourse();
-      fetchQuizByCourse();
+      fetchAllData();
     }
   }, [id]);
 
