@@ -3,23 +3,11 @@ import { Accordion, Card, Dropdown } from "react-bootstrap";
 import { FaGripVertical } from 'react-icons/fa';
 
 const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
-    const defaultQuestions = [
-        { nama_pertanyaan: '', konten_pertanyaan: '', jenis_pertanyaan: 'pilihan_ganda' },
-        { nama_pertanyaan: '', konten_pertanyaan: '', jenis_pertanyaan: 'jawaban_singkat' },
-        { nama_pertanyaan: '', konten_pertanyaan: '', jenis_pertanyaan: 'operasi_matematika' }
-    ];
-
-    const defaultAnswers = [
-        [{ nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }, { nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }],
-        [{ nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }],
-        [{ nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }]
-    ];
-
     const [quizName, setQuizName] = useState('');
     const [description, setDescription] = useState('');
     const [duration, setDuration] = useState('');
-    const [questions, setQuestions] = useState(defaultQuestions);
-    const [answers, setAnswers] = useState(defaultAnswers);
+    const [questions, setQuestions] = useState([]);
+    const [answers, setAnswers] = useState([]);
     const [draggedQuestionIndex, setDraggedQuestionIndex] = useState(null);
 
     useEffect(() => {
@@ -27,8 +15,20 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
             setQuizName(initialData.nama_quiz || '');
             setDescription(initialData.deskripsi_quiz || '');
             setDuration(initialData.durasi || '');
-            setQuestions(initialData.pertanyaan || defaultQuestions);
-            setAnswers(initialData.jawaban || defaultAnswers);
+            const sortedQuestions = (initialData.pertanyaan || []).sort((a, b) => a.order - b.order);
+            setQuestions(sortedQuestions);
+            setAnswers(initialData.jawaban || []);
+        } else {
+            setQuestions([
+                { nama_pertanyaan: '', konten_pertanyaan: '', jenis_pertanyaan: 'pilihan_ganda', order: 0 },
+                { nama_pertanyaan: '', konten_pertanyaan: '', jenis_pertanyaan: 'jawaban_singkat', order: 1 },
+                { nama_pertanyaan: '', konten_pertanyaan: '', jenis_pertanyaan: 'operasi_matematika', order: 2 }
+            ]);
+            setAnswers([
+                [{ nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }, { nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }],
+                [{ nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }],
+                [{ nama_jawaban: '', konten_jawaban: '', status_jawaban: 'benar' }]
+            ]);
         }
     }, [initialData]);
 
@@ -80,10 +80,22 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
     };
 
     const handleDrop = (index) => {
+        if (draggedQuestionIndex === null) return;
+
         const newQuestions = [...questions];
+        const newAnswers = [...answers];
+    
         const [draggedQuestion] = newQuestions.splice(draggedQuestionIndex, 1);
+        const [draggedAnswers] = newAnswers.splice(draggedQuestionIndex, 1);
+    
         newQuestions.splice(index, 0, draggedQuestion);
+        newAnswers.splice(index, 0, draggedAnswers);
+    
+        // Update order property for questions
+        newQuestions.forEach((question, idx) => question.order = idx);
+    
         setQuestions(newQuestions);
+        setAnswers(newAnswers);
         setDraggedQuestionIndex(null);
     };
 
@@ -142,7 +154,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
                             <hr style={{ height: '3px', color: '#000000', backgroundColor: '#000000', border: 'none' }} />
                             <div className="mb-3">
                                 <Accordion className="custom-accordion">
-                                    {questions.map((question, qIndex) => (
+                                    {questions.sort((a, b) => a.order - b.order).map((question, qIndex) => (
                                         <Card
                                             border='light'
                                             className="custom-accordion-card"
@@ -182,7 +194,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
                                                             required
                                                         ></textarea>
                                                         <span style={{ color: '#696969' }}>Answer</span>
-                                                        {answers[qIndex].map((answer, aIndex) => (
+                                                        {answers[qIndex]?.map((answer, aIndex) => (
                                                             <div key={aIndex} className="d-flex align-items-center mt-2">
                                                                 <input
                                                                     type="text"

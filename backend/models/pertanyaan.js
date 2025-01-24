@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.ENUM('pilihan_ganda', 'jawaban_singkat', 'operasi_matematika'),
                 allowNull: false,
             },
+            order: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
         },
         {
             sequelize,

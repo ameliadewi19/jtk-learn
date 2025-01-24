@@ -1,4 +1,4 @@
-const { Quiz, Pertanyaan, Jawaban, sequelize } = require('../models');
+const { Quiz, Pertanyaan, Jawaban, Course, sequelize } = require('../models');
 const { getAllPertanyaan, createPertanyaan, updatePertanyaan } = require('./pertanyaanController');
 const { getJawabanByIdPertanyaan, createJawaban, updateJawaban } = require('./jawabanController');
 
@@ -19,6 +19,34 @@ const getQuizByCourseId = async (req, res) => {
         const { id } = req.params;
         const quiz = await Quiz.findAll({ where: { id_course: id } });
         res.status(200).json(quiz);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// get quiz (id_quiz, name) and course (name) by pengajar id
+const getQuizByPengajarId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const quizzes = await Quiz.findAll({
+            include: {
+                model: Course,
+                as: 'course',
+                where: { id_pengajar: id },
+                attributes: ['nama_course'],
+            },
+            attributes: ['id_quiz', 'nama_quiz'],
+        });
+
+        // Transform the data into the desired structure
+        const transformedData = quizzes.map(quiz => ({
+            id_quiz: quiz.id_quiz,
+            nama_quiz: quiz.nama_quiz,
+            nama_course: quiz.course.nama_course,
+        }));
+
+        res.status(200).json(transformedData);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
@@ -56,6 +84,7 @@ const getQuizById = async (req, res) => {
                 nama_pertanyaan: pertanyaanItem.nama_pertanyaan,
                 konten_pertanyaan: pertanyaanItem.konten_pertanyaan,
                 jenis_pertanyaan: pertanyaanItem.jenis_pertanyaan,
+                order: pertanyaanItem.order,
             })),
             jawaban: jawaban.map((jawabanList) =>
                 jawabanList.map((jawabanItem) => ({
@@ -173,6 +202,7 @@ const deleteQuiz = async (req, res) => {
 module.exports = {
     getAllQuiz,
     getQuizByCourseId,
+    getQuizByPengajarId,
     getQuizById,
     createQuiz,
     updateQuiz,
