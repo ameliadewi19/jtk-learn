@@ -13,6 +13,7 @@ const DetailSummaryQuiz = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [resultsPerPage] = useState(5);
+    const [sortOrder, setSortOrder] = useState('asc');
     const token = localStorage.getItem('token');
 
     const fetchResultsList = async () => {
@@ -34,6 +35,25 @@ const DetailSummaryQuiz = () => {
     useEffect(() => {
         fetchResultsList();
     }, []);
+
+    useEffect(() => {
+        sortResultsList();
+    }, [sortOrder, resultsList]);
+
+    const sortResultsList = () => {
+        const sortedList = [...resultsList].sort((a, b) => {
+            if (sortOrder === 'asc') {
+                return a.student_name.localeCompare(b.student_name);
+            } else {
+                return b.student_name.localeCompare(a.student_name);
+            }
+        });
+        setResultsList(sortedList);
+    };
+
+    const handleSortChange = (e) => {
+        setSortOrder(e.target.value);
+    };
 
     const indexOfLastResult = currentPage * resultsPerPage;
     const indexOfFirstResult = indexOfLastResult - resultsPerPage;
@@ -101,6 +121,13 @@ const DetailSummaryQuiz = () => {
                     <h3 className="courses-title">{courseName}: {quizName}</h3>
                 </div>
                 <div className="quiz-table">
+                    <div className="sort-select">
+                        <label htmlFor="sort">Student Name</label>
+                        <select className='custom-select' name="sort" id="sort" value={sortOrder} onChange={handleSortChange}>
+                            <option value="asc">A-Z</option>
+                            <option value="desc">Z-A</option>
+                        </select>
+                    </div>
                     {resultsList.length === 0 ? (
                         <p className="text-center">There's no quizzes result.</p>
                     ) : (

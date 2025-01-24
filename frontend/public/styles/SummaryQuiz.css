@@ -1,12 +1,26 @@
 .quiz-table {
     width: 85%;
-    margin: 0 auto;
+    margin: 50px auto;
     font-size: 20px;
+}
+
+.sort-select {
+    display: flex;
+    gap: 20px;
+    /* center vertical */
+    align-items: center;
+}
+
+.custom-select {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #000;
+    border-radius: 10px;
+    background-color: #EFEFEF;
 }
 
 .custom-quiz-table {
     width: 100%;
-    margin: 50px 0;
 }
 
 .custom-quiz-table th {
