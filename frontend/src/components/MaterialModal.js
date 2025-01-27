@@ -45,17 +45,17 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
       }));
     }
   };
-  
+
   const handleRemoveFile = () => {
     setFormValues((prevData) => ({
       ...prevData,
-      konten_materi: null, 
+      konten_materi: null,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     if (!formValues.nama_materi || !formValues.jenis_materi) {
       Swal.fire({
         title: 'Error',
@@ -65,10 +65,10 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
       });
       return;
     }
-  
+
     // Gunakan file baru jika diunggah, atau file lama dari initialData
     const file = formValues.konten_materi;
-  
+
     if (!file) {
       Swal.fire({
         title: 'Error',
@@ -78,11 +78,11 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
       });
       return;
     }
-  
+
     if (formValues.konten_materi && file instanceof File) {
       const fileSizeMB = file.size / (1024 * 1024);
       const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-  
+
       if (formValues.jenis_materi === "teks") {
         if (fileExtension !== ".pdf" || fileSizeMB > 2) {
           Swal.fire({
@@ -107,7 +107,7 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
       }
     } else if (typeof file === "string") {
       const fileExtension = file.substring(file.lastIndexOf('.')).toLowerCase();
-  
+
       if (formValues.jenis_materi === "teks" && fileExtension !== ".pdf") {
         Swal.fire({
           title: 'Error',
@@ -129,13 +129,13 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
         return;
       }
     }
-  
+
     const submissionData = new FormData();
     submissionData.append('id_course', id);
     submissionData.append('id_materi', formValues.id_materi);
     submissionData.append('nama_materi', formValues.nama_materi);
     submissionData.append('jenis_materi', formValues.jenis_materi);
-  
+
     if (formValues.konten_materi && file instanceof File) {
       // File baru diunggah
       const formattedName =
@@ -147,16 +147,14 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
       // File lama digunakan (URL atau string)
       submissionData.append('konten_materi', file);
     }
-  
+
     onSubmit(submissionData);
     onClose();
   };
-  
-  
 
   return (
     <div className={`modal fade ${show ? 'show d-flex' : ''}`} tabIndex="-1">
-      <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+      <div className="modal-dialog modal-dialog-centered custom-modal-dialog" style={{ maxWidth: '1000px' }}>
         <div className="modal-content custom-modal-content">
           <div className="modal-header">
             <h5 className="modal-title">
@@ -166,71 +164,87 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
           </div>
           <div className="modal-body">
             <form onSubmit={handleSubmit}>
-              <div className="d-flex align-items-center gap-3">
-                <div className="mb-3 flex-grow-1">
-                  <label className="form-label">Name</label>
-                  <input
-                    type="text"
-                    name="nama_materi"
-                    className="form-control"
-                    value={formValues.nama_materi}
-                    onChange={handleChange}
-                    placeholder="Enter material name"
-                  />
-                </div>
-                <div className="mb-3 flex-shrink-0" style={{ width: '40%' }}>
-                  <label className="form-label">Type</label>
-                  <select
-                    name="jenis_materi"
-                    className="form-control"
-                    value={formValues.jenis_materi}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select type</option>
-                    <option value="teks">Teks</option>
-                    <option value="video">Video</option>
-                  </select>
-                </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Upload File</label>
-                <div
-                  className="upload-container"
-                  onClick={() => document.getElementById('upload-file').click()}
+                           <div className="grid-container-material">
+                <label className="form-label mb-0">Name</label>
+                <input
+                  type="text"
+                  name="nama_materi"
+                  className="form-control"
+                  value={formValues.nama_materi}
+                  onChange={handleChange}
+                  style={{
+                    backgroundColor: '#EFEFEF',
+                    borderRadius: '15px',
+                    height: 'calc(1.75rem + 2px)', // Consistent height
+                    padding: '0 12px',
+                    margin: 0, // Ensure no additional margin
+                  }}
+                />
+                <select
+                  name="jenis_materi"
+                  className="form-control"
+                  value={formValues.jenis_materi}
+                  onChange={handleChange}
+                  style={{
+                    backgroundColor: '#EFEFEF',
+                    borderRadius: '15px',
+                    height: 'calc(1.75rem + 2px)',
+                    lineHeight: '1.5',
+                    padding: '0 12px',
+                  }}
                 >
-                  {/* Jika file sudah ada di konten_materi */}
-                  {formValues.konten_materi ? (
-                    <div className="uploaded-file">
-                      <img
-                        src="/document.png"
-                        alt="File"
-                        style={{
-                          width: '50px',
-                          height: '50px',
-                          display: 'block',
-                          marginBottom: '10px',
-                        }}
-                      />
-                      {/* Tampilkan nama file jika ada */}
-                      <span>{formValues.konten_materi.name || formValues.konten_materi}</span>
-                      <button
-                        type="button"
-                        className="delete-btn"
-                        onClick={handleRemoveFile}
-                      >
-                        <img
-                          src="/trash-bin.png"
-                          alt="Delete"
-                          style={{
-                            width: '30px',
-                            height: '30px',
-                            display: 'block',
-                            marginBottom: '10px',
-                          }}
-                        />
-                      </button>
-                    </div>
-                  ) : (
+                  <option value="">Select Type</option>
+                  <option value="teks">Teks</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+              <style jsx>{`
+                .grid-container-material {
+                  display: grid;
+                  grid-template-columns: 100px 1fr 150px;
+                  gap: 10px;
+                  align-items: center;
+                  padding: 10px 0;
+                }
+              `}</style>
+              <div className="mb-4">
+  <div
+    className="upload-container"
+    onClick={() => document.getElementById('upload-file').click()}
+  >
+    {formValues.konten_materi ? (
+      <div className="uploaded-file d-flex align-items-center" style={{ backgroundColor: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+        <img
+          src="/document.png"
+          alt="File"
+          style={{
+            width: '40px',
+            height: '40px',
+            marginRight: '10px',
+          }}
+        />
+        <span style={{ flex: 1 }}>{formValues.konten_materi.name || formValues.konten_materi}</span>
+        <button
+          type="button"
+          onClick={handleRemoveFile}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+          }}
+        >
+          <img
+            src="/trash-bin.png"
+            alt="Delete"
+            style={{
+              width: '25px',
+              height: '25px',
+            }}
+          />
+        </button>
+      </div>
+    ) : (
                     <div className="upload-placeholder">
                       <div className="upload-container">
                         <img
@@ -278,6 +292,7 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
         </div>
       </div>
     </div>
+
   );
 };
 
