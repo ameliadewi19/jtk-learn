@@ -58,15 +58,15 @@ const DashboardPelajar = () => {
                 className="col-12 col-sm-6 col-lg-3"
                 onClick={() => navigate(`/course/${course.id}`)}
               >
-                <div className="card">
+                <div className="card custom-card">
                   <img
                     src={course.image}
-                    className="card-img-top"
+                    className="custom-card-img-top"
                     alt={course.title}
                   />
-                  <div className="card-body">
-                    <h6 className="card-title">{course.title}</h6>
-                    <p className="card-text">{course.author}</p>
+                  <div className="custom-card-body">
+                    <h6 className="custom-card-title">{course.title}</h6>
+                    <p className="custom-card-text">{course.author}</p>
                   </div>
                 </div>
               </div>

@@ -157,82 +157,25 @@ const CourseOverviewPage = () => {
                     <div className="detail-info course-instructor">
                         Instructor: {courseData?.pengajar?.nama || ''}
                     </div>
-                    {user?.role === 'pengajar' && (
-                        <>
-                            <div className="detail-info course-enrollment">
-                                Enrollment Key: {courseData?.enrollment_key || ''}
-                            </div>
-                            <div className="button-overview-container">
-                                <button
-                                    type="button"
-                                    className="button-overview"
-                                    onClick={() => navigate(`/edit-course`)}
-                                >
-                                    View Course
-                                </button>
-                                <button
-                                    type="button"
-                                    className="button-overview"
-                                    onClick={() => navigate(`/edit-info-course/${id}`)}
-                                >
-                                    Edit Info Course
-                                </button>
-                            </div>
-                        </>
-                    )}
-                    {user?.role === 'pelajar' && (
-                        <>
-                            {progress !== null ? (
-                                <>
-                                    <div className="progress-wrapper">
-                                        <div className="progress-bar-container">
-                                            <div
-                                                className="progress-bar-fill"
-                                                role="progressbar"
-                                                aria-valuenow={progress.persentase_course}
-                                                aria-valuemin="0"
-                                                aria-valuemax="100"
-                                                style={{
-                                                    width: `${progress.persentase_course}%`,
-                                                }}
-                                            ></div>
-                                        </div>
-                                        <span className="progress-percentage-text">
-                                            {progress.persentase_course}%
-                                        </span>
-                                    </div>
-                                    <div className="button-overview-container">
-                                        <button
-                                            type="button"
-                                            className="button-overview"
-                                            onClick={() => navigate(`/learn-course/${id}`)}
-                                        >
-                                            {progress.persentase_course < 100 ? 'Continue Course' : 'View Course'}
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="enroll-form">
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="Enrollment key"
-                                        value={enrollmentKey}
-                                        onChange={(e) => setEnrollmentKey(e.target.value)}
-                                    />
-                                    <div className="button-enroll-container">
-                                        <button
-                                            type="button"
-                                            className="button-enroll"
-                                            onClick={() => handleEnroll()}
-                                        >
-                                            Enroll
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
+                    <div className="detail-info course-enrollment">
+                        Enrollment Key: {courseData?.enrollment_key || ''}
+                    </div>
+                    <div className="button-overview-container">
+                        <button
+                            type="button"
+                            className="button-overview"
+                            onClick={() => navigate(`/edit-course/${id}`)}
+                        >
+                            View Course
+                        </button>
+                        <button
+                            type="button"
+                            className="button-overview"
+                            onClick={() => navigate(`/edit-info-course/${id}`)}
+                        >
+                            Edit Info Course
+                        </button>
+                    </div>
                 </div>
                 <MessageModal
                     show={messageModal.show}
