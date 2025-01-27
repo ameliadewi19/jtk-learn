@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
     }
     HistoryQuiz.init(
         {
+            id_history_quiz: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
             id_quiz: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

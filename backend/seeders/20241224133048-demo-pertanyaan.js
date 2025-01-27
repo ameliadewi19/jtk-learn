@@ -21,6 +21,7 @@ module.exports = {
         nama_pertanyaan: 'Pemrograman Web',
         konten_pertanyaan: 'Apa itu HTML?',
         jenis_pertanyaan: 'pilihan_ganda',
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -29,6 +30,7 @@ module.exports = {
         nama_pertanyaan: 'CSS',
         konten_pertanyaan: 'Apa kepanjangan dari CSS?',
         jenis_pertanyaan: 'jawaban_singkat',
+        order: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -37,6 +39,7 @@ module.exports = {
         nama_pertanyaan: 'Operasi Matematika',
         konten_pertanyaan: 'Berapakah hasil dari 2 + 3?',
         jenis_pertanyaan: 'operasi_matematika',
+        order: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

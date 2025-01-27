@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { FaEllipsisV, FaGripVertical } from 'react-icons/fa';
@@ -11,7 +13,12 @@ import MaterialModal from './MaterialModal';
 
 const SidebarPengajar = () => {
   const { id } = useParams(); // Get the id from the URL parameters
+  const { id } = useParams(); // Get the id from the URL parameters
   const [course, setCourse] = useState({
+    name: "",
+    items: [],
+  });
+  const [selectedItem, setSelectedItem] = useState(null);
     name: "",
     items: [],
   });
@@ -338,7 +345,7 @@ const SidebarPengajar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleDragStart = (e, itemId) => {
+  const handleDragStart = (itemId) => {
     setDraggedItemId(itemId);
   };
 

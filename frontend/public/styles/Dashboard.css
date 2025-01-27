@@ -27,7 +27,7 @@
 
 }
 
-.card {
+.custom-card {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     transition: all 0.3s ease;
@@ -37,29 +37,29 @@
     width: 95%;
 }
 
-.card:hover {
+.custom-card:hover {
     box-shadow: none; 
     transform: scale(1.02); 
 }
 
-.card-body {
+.custom-card-body {
     padding: 10px;
 }
 
-.card-body .card-title {
+.custom-card-body .custom-card-title {
     margin-bottom: 8px;
     font-size: 17px;
     font-weight: bold;
 }
 
-.card-body .card-text {
+.custom-card-body .custom-card-text {
     margin-bottom: 0;
     line-height: 1.2;
     font-size: 14px;
     color: #6c757d;
 }
 
-.card-img-top {
+.custom-card-img-top {
     object-fit: cover;
     height: 170px;
     border-top-left-radius: 8px;
