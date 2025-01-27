@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
-import MessageModal from '../components/MessageModal';
 
 const CoursePengajarPage = () => {
     const [image, setImage] = useState(null);
@@ -19,31 +19,32 @@ const CoursePengajarPage = () => {
     const { id } = useParams();
     const isEditMode = Boolean(id);
 
-    const [messageModal, setMessageModal] = useState({
-        show: false,
-        type: '',
-        message: '',
-    });
-    const [showCancelModal, setShowCancelModal] = useState(false);  // Add state for cancel modal
-
     const handleAddOrUpdate = async (newCourse) => {
         try {
-            setMessageModal({ show: false, type: '', message: '' });
-
             if (!idPengajar || !newCourse.courseName || !newCourse.enrollmentKey || !newCourse.description) {
-                setMessageModal({
-                    show: true,
-                    type: 'error',
-                    message: 'Harap lengkapi semua kolom yang diperlukan: Nama Course, Deskripsi, dan Enrollment Key.',
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Harap lengkapi semua kolom yang diperlukan: Nama Course, Deskripsi, dan Enrollment Key.',
+                    icon: 'error',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
                 });
+
+
                 return;
             }
 
             if (newCourse.enrollmentKey.length < 8 || newCourse.enrollmentKey.length > 12) {
-                setMessageModal({
-                    show: true,
-                    type: 'error',
-                    message: 'Enrollment key harus memiliki 8-12 karakter.',
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Enrollment key harus memiliki 8-12 karakter.',
+                    icon: 'error',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
                 });
                 return;
             }
@@ -66,15 +67,28 @@ const CoursePengajarPage = () => {
                 ? await api.put(`/courses/${id}`, formData, { headers: { Authorization: `Bearer ${token}` } })
                 : await api.post('/courses', formData, { headers: { Authorization: `Bearer ${token}` } });
 
-            setMessageModal({
-                show: true,
-                type: 'success',
-                message: isEditMode ? "Course berhasil diperbarui!" : "Course berhasil ditambahkan!",
+            Swal.fire({
+                title: 'Success!',
+                text: isEditMode ? 'Course berhasil diperbarui!' : 'Course berhasil ditambahkan!',
+                icon: 'success',
+                confirmButtonText: 'Close',
+                customClass: {
+                    confirmButton: 'custom-confirm-button',
+                },
+            }).then(() => {
+                isEditMode ? navigate(`/course/${id}`, { replace: true }) : navigate('/dashboard-pengajar', { replace: true });
             });
-
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Terjadi kesalahan';
-            setMessageModal({ show: true, type: 'error', message: errorMessage });
+            Swal.fire({
+                title: 'Error',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'Close',
+                customClass: {
+                    confirmButton: 'custom-confirm-button',
+                },
+            });
         }
     };
 
@@ -99,18 +113,6 @@ const CoursePengajarPage = () => {
         }
     }, [id]);
 
-    const handleCloseMessageModal = () => {
-        setMessageModal({ show: false, type: '', message: '' });
-
-        if (messageModal.type === 'success') {
-            if (isEditMode) {
-                navigate(`/course/${id}`, { replace: true });
-            } else {
-                navigate('/dashboard-pengajar', { replace: true });
-            }
-        }
-    };
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -120,27 +122,33 @@ const CoursePengajarPage = () => {
     };
 
     const handleImageChange = (e) => {
-        setMessageModal({ show: false, type: '', message: '' });
-
         const file = e.target.files[0];
         if (file) {
             const validFormats = ['image/jpeg', 'image/png', 'image/jpg'];
             const maxSize = 2 * 1024 * 1024; // 2MB
 
             if (!validFormats.includes(file.type)) {
-                setMessageModal({
-                    show: true,
-                    type: 'error',
-                    message: 'Unggah gagal! Gunakan format JPG/PNG/JPEG.',
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Unggah gagal! Gunakan format JPG/PNG/JPEG.',
+                    icon: 'error',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
                 });
                 return;
             }
 
             if (file.size > maxSize) {
-                setMessageModal({
-                    show: true,
-                    type: 'error',
-                    message: 'Unggah gagal! Ukuran file maksimal 2MB.',
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Unggah gagal! Ukuran file maksimal 2MB.',
+                    icon: 'error',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
                 });
                 return;
             }
@@ -160,16 +168,24 @@ const CoursePengajarPage = () => {
     };
 
     const handleCancel = () => {
-        setShowCancelModal(true); 
-    };
-
-    const handleConfirmCancel = () => {
-        setShowCancelModal(false); 
-        isEditMode ? navigate(`/course/${id}`) : navigate('/dashboard-pengajar');
-    };
-
-    const handleRejectCancel = () => {
-        setShowCancelModal(false); 
+        Swal.fire({
+            title: 'Warning!',
+            text: isEditMode
+                ? 'Perubahan Anda akan hilang. Apakah Anda yakin ingin membatalkan perubahan course?'
+                : 'Apakah Anda yakin ingin membatalkan penambahan course?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Batalkan',
+            cancelButtonText: 'Tidak',
+            customClass: {
+                confirmButton: 'custom-confirm-button',
+                cancelButton: 'custom-cancel-button',
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                isEditMode ? navigate(`/course/${id}`) : navigate('/dashboard-pengajar');
+            }
+        });
     };
 
     return (
@@ -279,23 +295,6 @@ const CoursePengajarPage = () => {
                     </form>
                 </div>
             </div>
-
-            {/* Cancel Confirmation Modal */}
-            <MessageModal
-                show={showCancelModal}
-                type="warning"
-                message={isEditMode ? "Apakah Anda yakin ingin membatalkan perubahan course?" : "Apakah Anda yakin ingin membatalkan penambahan course?"}
-                onConfirm={handleConfirmCancel}
-                onCancel={handleRejectCancel}
-            />
-
-            {/* Message Modal for success or error */}
-            <MessageModal
-                show={messageModal.show}
-                type={messageModal.type}
-                message={messageModal.message}
-                onClose={handleCloseMessageModal}
-            />
         </div>
     );
 };

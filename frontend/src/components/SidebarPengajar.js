@@ -1,70 +1,137 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { FaEllipsisV, FaGripVertical } from 'react-icons/fa';
-import { useEffect } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
+import QuizModal from "./QuizModal";
+import MaterialModal from './MaterialModal';
 
 
 const SidebarPengajar = () => {
-
-  // Dummy data untuk course, materi, dan quiz
+  const { id } = useParams(); // Get the id from the URL parameters
   const [course, setCourse] = useState({
-    name: "Pengenalan Pemrograman Web",
-    materi: [],
+    name: "",
+    items: [],
   });
-  const id_course = 1; // Dummy id_course untuk testing
-
-  // const [course, setCourse] = useState({
-  //   name: "Matematika Diskrit",
-  //   materi: [
-  //     { id: 1, name: "Logika Proposisi", type: "materi" },
-  //     { id: 2, name: "Kuis Logika Proposisi", type: "quiz" },
-  //     { id: 3, name: "Dummy", type: "quiz" },
-  //   ],
-  // });
-
-  const [selectedMateri, setSelectedMateri] = useState(course.materi[0]?.id || null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [materialInitialData, setMaterialInitialData] = useState(null);
+  const [quizInitialData, setQuizInitialData] = useState(null);
+  const [isEditMaterial, setIsEditMaterial] = useState(false);
+  const [isEditQuiz, setIsEditQuiz] = useState(false);
   const token = localStorage.getItem('token');
-  
-  const fetchMateriByCourse = async () => {
-    try {
-      const id_course = 1; // Dummy id_course untuk testing
+  const incrementalId = useRef(0);
 
-      const response = await api.get(`/materials/course/${id_course}`, {
+  const fetchCourse = async () => {
+    try {
+      const response = await api.get(`/courses/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const mappedMateri = response.data.map((materi) => ({
-        id: materi.id_materi,
-        name: materi.nama_materi,
-        type: materi.jenis_materi,
-      }));
-
       setCourse((prevCourse) => ({
         ...prevCourse,
-        materi: mappedMateri,
+        name: response.data.nama_course,
+      }));
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      Swal.fire('Error', 'Failed to fetch course. Please try again later.', 'error');
+    }
+  };
+
+  const fetchMateriByCourse = async () => {
+    try {
+      const response = await api.get(`/materials/course/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data.map((materi) => ({
+        id: incrementalId.current++,
+        id_item: materi.id_materi,
+        name: materi.nama_materi,
+        type: 'materi',
       }));
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      return [];
     }
   };
 
-  useEffect(() => {
-    if (id_course) {
-      fetchMateriByCourse();
+  const fetchQuizByCourse = async () => {
+    try {
+      const response = await api.get(`/quizzes/course/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data.map(quiz => ({
+        id: incrementalId.current++,
+        id_item: quiz.id_quiz,
+        name: quiz.nama_quiz,
+        type: 'quiz',
+      }));
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
+      return [];
     }
-  }, [id_course]);
+  };
+
+  const fetchQuizData = async (idQuiz) => {
+    try {
+      const response = await api.get(`/quizzes/${idQuiz}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching quiz data:', error);
+      Swal.fire('Error', 'Failed to fetch quiz data. Please try again later.', 'error');
+    }
+  };
+
+  const fetchMaterialData = async (idMateri) => {
+    try {
+      const response = await api.get(`/materials/${idMateri}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching material data:', error);
+      Swal.fire('Error', 'Failed to fetch material data. Please try again later.', 'error');
+    }
+  };
+
+  const fetchAllData = async () => {
+    const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
+    setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchCourse();
+      fetchAllData();
+    }
+  }, [id]);
 
   const handleClick = (item) => {
-    setSelectedMateri(item.id);
+    setSelectedItem(item.id);
   };
 
   const handleDropdownToggle = (id) => {
@@ -72,19 +139,199 @@ const SidebarPengajar = () => {
   };
 
   const handleEdit = (item) => {
-    alert(`Edit ${item.name}`);
+    if (item.type === 'quiz') {
+      fetchQuizData(item.id_item)
+        .then((data) => {
+          setQuizInitialData(data);
+        })
+      setIsEditQuiz(true);
+      setShowQuizModal(true);
+    } else {
+      fetchMaterialData(item.id_item)
+        .then((data) => {
+          setMaterialInitialData(data);
+        })
+      setIsEditMaterial(true);
+      setShowMaterialModal(true);
+    }
   };
 
   const handleDelete = (item) => {
-    alert(`Delete ${item.name}`);
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Are you sure you want to delete this? This action cannot be undone.`,
+      icon: 'error',
+      showCancelButton: true,
+      cancelButtonColor: '#6488EA',
+      confirmButtonColor: '#EA6488',
+      cancelButtonText: 'Cancel',
+      confirmButtonText: 'Delete',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (item.type === 'materi') {
+          api.delete(`/materials/${item.id_item}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+            .then(() => {
+              setCourse((prevCourse) => ({
+                ...prevCourse,
+                items: prevCourse.items.filter((i) => i.id !== item.id),
+              }));
+              Swal.fire({
+                title: 'Success!',
+                text: 'Course material deleted successfully.',
+                icon: 'success',
+                confirmButtonText: 'Close',
+                customClass: {
+                  confirmButton: 'custom-confirm-button',
+                },
+              })
+            })
+            .catch((error) => {
+              console.error('Error deleting course material:', error);
+              Swal.fire({
+                title: 'Error',
+                text: 'Failed to delete course material. Please try again later.', icon: 'error',
+                confirmButtonText: 'Close',
+                customClass: {
+                  confirmButton: 'custom-confirm-button',
+                },
+              });
+            });
+        } else {
+          api.delete(`/quizzes/${item.id_item}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+            .then(() => {
+              setCourse((prevCourse) => ({
+                ...prevCourse,
+                items: prevCourse.items.filter((i) => i.id !== item.id),
+              }));
+              Swal.fire('Success', 'Quiz has been deleted successfully.', 'success');
+            })
+            .catch((error) => {
+              console.error('Error deleting quiz:', error);
+              Swal.fire('Error', 'Failed to delete quiz. Please try again later.', 'error');
+            });
+        }
+      }
+    });
   };
 
   const handleAddMaterial = () => {
-    alert("Add Material");
+    setMaterialInitialData(null);
+    setIsEditMaterial(false);
+    setShowMaterialModal(true);
   };
 
   const handleAddQuiz = () => {
-    alert("Add Quiz");
+    setQuizInitialData(null);
+    setIsEditQuiz(false);
+    setShowQuizModal(true);
+  };
+
+  const handleQuizSubmit = (data) => {
+    try {
+      if (isEditQuiz) {
+        api.put(`/quizzes/${data.id_quiz}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(() => {
+            setCourse((prevCourse) => ({
+              ...prevCourse,
+              items: prevCourse.items.map((item) => {
+                if (item.id_item === data.id_quiz) {
+                  return { ...item, name: data.nama_quiz };
+                }
+                return item;
+              }),
+            }));
+            Swal.fire('Success', 'Quiz has been updated successfully.', 'success');
+          })
+          .catch((error) => {
+            console.error('Error updating quiz:', error);
+            Swal.fire('Error', 'Failed to update quiz. Please try again later.', 'error');
+          });
+      } else {
+        api.post('/quizzes', data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => {
+            setCourse((prevCourse) => ({
+              ...prevCourse,
+              items: [...prevCourse.items, { id: incrementalId.current++, id_item: response.data.id_quiz, name: data.nama_quiz, type: 'quiz' }],
+            }));
+            Swal.fire('Success', 'Quiz has been created successfully.', 'success');
+          })
+          .catch((error) => {
+            console.error('Error creating quiz:', error);
+            Swal.fire('Error', 'Failed to create quiz. Please try again later.', 'error');
+          });
+      }
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      Swal.fire('Error', 'Failed to submit quiz. Please try again later.', 'error');
+    }
+    setShowQuizModal(false);
+    fetchQuizByCourse(); // Refetch quiz data after submission
+  };
+
+  const handleMaterialSubmit = (data) => {
+    try {
+      if (isEditMaterial) {
+        api.put(`/materials/${data.id_materi}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(() => {
+            setCourse((prevCourse) => ({
+              ...prevCourse,
+              items: prevCourse.items.map((item) => {
+                if (item.id === data.id_materi) {
+                  return { ...item, name: data.nama_materi };
+                }
+                return item;
+              }),
+            }));
+            Swal.fire('Success', 'Material has been updated successfully.', 'success');
+          })
+          .catch((error) => {
+            console.error('Error updating material:', error);
+            Swal.fire('Error', 'Failed to update material. Please try again later.', 'error');
+          });
+      } else {
+        api.post('/materials', data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => {
+            setCourse((prevCourse) => ({
+              ...prevCourse,
+              items: [...prevCourse.items, { id: incrementalId.current++, name: data.nama_materi, type: 'materi' }],
+            }));
+            Swal.fire('Success', 'Materi berhasil ditambahkan!', 'success');
+          })
+          .catch((error) => {
+            console.error('Error creating material:', error);
+            Swal.fire('Error', 'Failed to create material. Please try again later.', 'error');
+          });
+      }
+    } catch (error) {
+      console.error('Error submitting material:', error);
+      Swal.fire('Error', 'Failed to submit material. Please try again later.', 'error');
+    }
+    setShowMaterialModal(false);
+    fetchMateriByCourse(); // Refetch material data after submission
   };
 
   const toggleSidebar = () => {
@@ -99,20 +346,20 @@ const SidebarPengajar = () => {
     e.preventDefault();
   };
 
-  const handleDrop = (e, targetItemId) => {
-    const draggedIndex = course.materi.findIndex(item => item.id === draggedItemId);
-    const targetIndex = course.materi.findIndex(item => item.id === targetItemId);
+  const handleDrop = (targetItemId) => {
+    const draggedIndex = course.items.findIndex(item => item.id === draggedItemId);
+    const targetIndex = course.items.findIndex(item => item.id === targetItemId);
 
     if (draggedIndex === -1 || targetIndex === -1) return;
 
-    // Create a copy of the materi array
-    const updatedMateri = [...course.materi];
+    // Create a copy of the items array
+    const updatedItems = [...course.items];
 
     // Move the dragged item to the target position
-    const [draggedItem] = updatedMateri.splice(draggedIndex, 1);
-    updatedMateri.splice(targetIndex, 0, draggedItem);
+    const [draggedItem] = updatedItems.splice(draggedIndex, 1);
+    updatedItems.splice(targetIndex, 0, draggedItem);
 
-    setCourse({ ...course, materi: updatedMateri });
+    setCourse({ ...course, items: updatedItems });
   };
 
   return (
@@ -145,16 +392,16 @@ const SidebarPengajar = () => {
             <hr className="custom-hr" />
 
             <ul className="learn-list mt-1">
-              {course.materi.map((item) => (
+              {course.items.map((item) => (
                 <li
                   key={item.id}
-                  className={`learn-list-item d-flex align-items-center ${selectedMateri === item.id ? "active" : ""}`}
+                  className={`learn-list-item d-flex align-items-center ${selectedItem === item.id ? "active" : ""}`}
                   onClick={() => handleClick(item)}
                   style={{ cursor: "pointer" }}
                   draggable
-                  onDragStart={(e) => handleDragStart(e, item.id)}
+                  onDragStart={() => handleDragStart(item.id)}
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, item.id)}
+                  onDrop={() => handleDrop(item.id)}
                 >
                   <span className="icon ms-2">
                     <FaGripVertical style={{ cursor: 'move', marginTop: '-5px', fontSize: '20px' }} />
@@ -210,6 +457,18 @@ const SidebarPengajar = () => {
           </div>
         </div>
       </div>
+      <QuizModal
+        show={showQuizModal}
+        onClose={() => setShowQuizModal(false)}
+        onSubmit={handleQuizSubmit}
+        initialData={isEditQuiz ? quizInitialData : null}
+      />
+      <MaterialModal
+        show={showMaterialModal}
+        onClose={() => setShowMaterialModal(false)}
+        onSubmit={handleMaterialSubmit}
+        initialData={isEditMaterial ? materialInitialData : null}
+      />
     </nav>
   );
 };
