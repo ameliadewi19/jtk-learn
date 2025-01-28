@@ -1,33 +1,37 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { UserContext } from '../components/UserContext';
 
 const SidebarPelajar = () => {
-  const [course, setCourse] = useState({
-    name: '',
-    materi: [],
-  });
   const { id } = useParams();
-  const [courseData, setCourseData] = useState({});
-  const [selectedMateri, setSelectedMateri] = useState(course.materi[0]?.id || null);
+  const [course, setCourse] = useState({
+    name: "Pengenalan Pemrograman Web",
+    items: [],
+  });
+  const [selectedItem, setSelectedItem] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem('token');
-  const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+  const incrementalId = useRef(0); // Use useRef for incrementalId
 
-  const fetchCourseData = async () => {
+  const fetchCourse = async () => {
     try {
       const response = await api.get(`/courses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      setCourseData(response.data);
+
+      setCourse((prevCourse) => ({
+        ...prevCourse,
+        name: response.data.nama_course,
+      }));
     } catch (error) {
-      console.error('Error fetching course data:', error);
+      console.error('Error fetching course:', error);
+      Swal.fire('Error', 'Failed to fetch course. Please try again later.', 'error');
     }
   };
 
@@ -39,48 +43,54 @@ const SidebarPelajar = () => {
         },
       });
 
-      const mappedMateri = response.data.map((materi) => ({
-        id: materi.id_materi,
+      return response.data.map(materi => ({
+        id: incrementalId.current++,
+        id_item: materi.id_materi,
         name: materi.nama_materi,
-        type: materi.jenis_materi,
-      }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        materi: mappedMateri,
+        type: "materi",
       }));
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      return [];
     }
   };
 
-  const verifyEnrollment = async () => {
+  const fetchQuizByCourse = async () => {
     try {
-      console.log(user.userData.id_pelajar);
-      console.log(id);
-      await api.get(`/participant/progress/${id}/${user.userData.id_pelajar}`, {
+      const response = await api.get(`/quizzes/course/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      return response.data.map(quiz => ({
+        id: incrementalId.current++,
+        id_item: quiz.id_quiz,
+        name: quiz.nama_quiz,
+        type: 'quiz',
+      }));
     } catch (error) {
-      if (error.response?.status === 403) {
-        navigate(`/course/${id}`);
-      }
+      console.error('Error fetching quiz:', error);
+      Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
+      return [];
     }
+  };
+
+  const fetchAllData = async () => {
+    const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
+    setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
   };
 
   useEffect(() => {
     if (id) {
-      verifyEnrollment();
-      fetchMateriByCourse();
-      fetchCourseData();
+      fetchCourse();
+      fetchAllData();
     }
   }, [id]);
 
   const handleClick = (item) => {
-    setSelectedMateri(item.id);
+    setSelectedItem(item.id);
   };
 
   const toggleSidebar = () => {
@@ -109,7 +119,7 @@ const SidebarPelajar = () => {
 
         <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} id="sidebarMenu">
           <div className="sidebar-container d-flex flex-column p-3">
-            <h4 className="course-title">{courseData.nama_course}</h4>
+            <h4 className="course-title">{course.nama_course}</h4>
             <div className="d-flex align-items-center justify-content-center my-3">
               <div className="progress" style={{ height: "10px", width: "90%" }}>
                 <div
@@ -128,10 +138,10 @@ const SidebarPelajar = () => {
             </div>
             <hr className="custom-hr" />
             <ul className="learn-list mt-1">
-              {course.materi.map((item) => (
+              {course.items.map((item) => (
                 <li
                   key={item.id}
-                  className={`learn-list-item d-flex align-items-center ${selectedMateri === item.id ? "active" : ""}`}
+                  className={`learn-list-item d-flex align-items-center ${selectedItem === item.id ? "active" : ""}`}
                   onClick={() => handleClick(item)}
                   style={{ cursor: "pointer" }}
                 >

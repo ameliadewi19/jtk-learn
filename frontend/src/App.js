@@ -10,6 +10,8 @@ import SidebarPelajar from './components/SidebarPelajar';
 import SidebarPengajar from './components/SidebarPengajar';
 import CoursePengajar from './pages/CoursePengajarPage';
 import CourseOverviewPage from './pages/CourseOverviewPage';
+import SummaryQuiz from './pages/SummaryQuiz';
+import DetailSummaryQuiz from './pages/DetailSummaryQuiz';
 
 function App() {
   return (
@@ -59,7 +61,7 @@ function App() {
                     }
                   />
                   <Route
-                    path="/edit-course"
+                    path="/edit-course/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
                         <SidebarPengajar />
@@ -84,6 +86,28 @@ function App() {
                   />
                 </Routes>
               </>
+            }
+          />
+          <Route
+            path="/summary-quiz"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <SummaryQuiz />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/summary-quiz/:id"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <DetailSummaryQuiz />
+                </>
+              </ProtectedRoute>
             }
           />
         </Routes>
