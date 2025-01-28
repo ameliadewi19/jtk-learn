@@ -136,7 +136,7 @@ const MempelajariCoursePage = () => {
           )
         ) : (
           <div className="text-center">
-            <h4>Silakan pilih materi atau quiz dari sidebar.</h4>
+            <h5>There are no materials or quizzes for this course yet</h5>
           </div>
         )}
       </div>

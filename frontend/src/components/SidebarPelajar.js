@@ -25,7 +25,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
         api.get(`/materials/course/${activeCourse.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        api.get(`/quizzes/`, {
+        api.get(`/quizzes//course/${activeCourse.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -90,9 +90,12 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
 
       setParticipant(mappedCourses);
 
-      if (mappedCourses.length > 0) {
-        setActiveCourse(mappedCourses[0]);
-        onCourseChange(mappedCourses[0]);
+      const matchingCourse = mappedCourses.find((course) => course.id === Number(id));
+      if (matchingCourse) {
+        setActiveCourse(matchingCourse);
+        onCourseChange(matchingCourse);
+      } else {
+        setActiveCourse(null); // Kosongkan jika tidak ada yang cocok
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -100,11 +103,13 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   };
 
   useEffect(() => {
-    if (activeCourse) {
+    if (activeCourse && activeCourse.id === Number(id)) {
       updateCProgress(activeCourse.id, activeCourse.progress);
       fetchMateriDanQuiz();
+    } else {
+      setCourse({ name: "", items: [] }); // Kosongkan materi dan quiz jika course tidak sesuai
     }
-  }, [activeCourse]);
+  }, [activeCourse, id]);  
 
   useEffect(() => {
     if (activeMateri) {
@@ -186,7 +191,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
                 </ul>
               </>
             ) : (
-              <p>No active course available.</p>
+              <p>No course available.</p>
             )}
           </div>
         </div>
