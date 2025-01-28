@@ -74,11 +74,12 @@ const Navbar = () => {
             )}
             <li className="nav-item history-quiz">
               <a
-                className={`nav-link ${location.pathname === '/history-quiz' ? 'active' : ''}`}
-                onClick={() => navigate('/history-quiz')}
+                className={`nav-link ${location.pathname === (user?.role === 'pengajar' ? '/summary-quiz' : '/history-quiz') ? 'active' : ''}`}
+                onClick={() => navigate(user?.role === 'pengajar' ? '/summary-quiz' : '/history-quiz')}
               >
-                History Quiz
+                {user?.role === 'pengajar' ? 'Summary Quiz' : 'History Quiz'}
               </a>
+
             </li>
             {/* Dropdown My Account */}
             <li className="nav-name dropdown" ref={dropdownRef}>

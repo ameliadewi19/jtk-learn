@@ -9,11 +9,11 @@ import { UserContext } from '../components/UserContext';
 const SidebarPelajar = () => {
   const [course, setCourse] = useState({
     name: '',
-    materi: [],
+    items: [],
   });
   const { id } = useParams();
   const [courseData, setCourseData] = useState({});
-  const [selectedMateri, setSelectedMateri] = useState(course.materi[0]?.id || null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
@@ -39,19 +39,16 @@ const SidebarPelajar = () => {
         },
       });
 
-      const mappedMateri = response.data.map((materi) => ({
-        id: materi.id_materi,
+      return response.data.map((materi) => ({
+        id: incrementalId.current++,
+        id_item: materi.id_materi,
         name: materi.nama_materi,
-        type: materi.jenis_materi,
-      }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        materi: mappedMateri,
+        type: 'materi',
       }));
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      return [];
     }
   };
 
@@ -106,7 +103,7 @@ const SidebarPelajar = () => {
   }, [id]);
 
   const handleClick = (item) => {
-    setSelectedMateri(item.id);
+    setSelectedItem(item.id);
   };
 
   const toggleSidebar = () => {
@@ -154,10 +151,10 @@ const SidebarPelajar = () => {
             </div>
             <hr className="custom-hr" />
             <ul className="learn-list mt-1">
-              {course.materi.map((item) => (
+              {course.items.map((item) => (
                 <li
                   key={item.id}
-                  className={`learn-list-item d-flex align-items-center ${selectedMateri === item.id ? "active" : ""}`}
+                  className={`learn-list-item d-flex align-items-center ${selectedItem === item.id ? "active" : ""}`}
                   onClick={() => handleClick(item)}
                   style={{ cursor: "pointer" }}
                 >
