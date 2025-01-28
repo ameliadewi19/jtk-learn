@@ -12,10 +12,13 @@ const SidebarPelajar = () => {
     items: [],
   });
   const { id } = useParams();
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [participant, setParticipant] = useState([]);
+  const [activeCourse, setActiveCourse] = useState(null);
   const [courseData, setCourseData] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const incrementalId = useRef(0);
@@ -30,6 +33,39 @@ const SidebarPelajar = () => {
       console.error('Error fetching course data:', error);
     }
   };
+
+  useEffect(() => {
+    const fetchCParticipant = async () => {
+      try {
+        const response = await api.get(`/participant/pelajar/${user.userData.id_pelajar}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const mappedCourses = response.data.map((item) => ({
+          id: item.course.id_course,
+          title: item.course.nama_course,
+          progress: item.persentase_course,
+        }));
+        setParticipant(mappedCourses);
+
+        if (mappedCourses.length > 0) {
+          setActiveCourse(mappedCourses[0]);
+          onCourseChange(mappedCourses[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+      }
+    };
+    fetchCParticipant();
+  }, [token, user.userData.id_pelajar]);
+
+  useEffect(() => {
+    if (activeCourse) {
+      updateCProgress(activeCourse.id, activeCourse.progress);
+    }
+  }, [activeCourse, updateCProgress]);
 
   const fetchMateriByCourse = async () => {
     try {
@@ -100,7 +136,7 @@ const SidebarPelajar = () => {
       fetchCourseData();
       fetchAllData();
     }
-  }, [id]);
+  }, [activeMateri]);
 
   const handleClick = (item) => {
     setSelectedItem(item.id);
@@ -111,16 +147,16 @@ const SidebarPelajar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg" style={{ padding: '0px 0px' }}>
-      <div className="container-fluid" style={{ padding: '0px 0px' }}>
+    <nav className="navbar navbar-expand-lg" style={{ padding: "0px 0px" }}>
+      <div className="container-fluid h-100 d-flex" style={{ padding: "0px 0px" }}>
         <button
           className="navbar-toggler d-lg-none"
           type="button"
-          onClick={toggleSidebar}
+          onClick={() => setIsOpen(!isOpen)}
           data-bs-toggle="collapse"
           data-bs-target="#sidebarMenu"
           aria-controls="sidebarMenu"
-          aria-expanded={isOpen ? 'true' : 'false'}
+          aria-expanded={isOpen ? "true" : "false"}
           aria-label="Toggle navigation"
           style={{
             backgroundColor: "#f8f9fa",
@@ -132,43 +168,51 @@ const SidebarPelajar = () => {
 
         <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} id="sidebarMenu">
           <div className="sidebar-container d-flex flex-column p-3">
-            <h4 className="course-title">{courseData.nama_course}</h4>
-            <div className="d-flex align-items-center justify-content-center my-3">
-              <div className="progress" style={{ height: "10px", width: "90%" }}>
-                <div
-                  className="progress-bar"
-                  role="progressbar"
-                  style={{
-                    width: `${course.progress}%`,
-                    backgroundColor: course.progress === 0 ? '#6488EA' : '#EA6488'
-                  }}
-                  aria-valuenow={course.progress}
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                ></div>
-              </div>
-              <span className="text-muted ms-2">{course.progress}%</span>
-            </div>
-            <hr className="custom-hr" />
-            <ul className="learn-list mt-1">
-              {course.items.map((item) => (
-                <li
-                  key={item.id}
-                  className={`learn-list-item d-flex align-items-center ${selectedItem === item.id ? "active" : ""}`}
-                  onClick={() => handleClick(item)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span className="icon ms-3 me-3">
-                    {item.type === "materi" ? (
-                      <img src="/materi.png" alt="Materi" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                    ) : (
-                      <img src="/quiz.png" alt="Quiz" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                    )}
-                  </span>
-                  {item.name}
-                </li>
-              ))}
-            </ul>
+            {activeCourse ? (
+              <>
+                <h4 className="course-title">{activeCourse.title}</h4>
+                <div className="d-flex align-items-center justify-content-center my-3">
+                  <div className="progress" style={{ height: "10px", width: "90%" }}>
+                    <div
+                      className="progress-bar"
+                      role="progressbar"
+                      style={{
+                        width: `${activeCourse.progress}%`,
+                        backgroundColor: activeCourse.progress === 0 ? "#6488EA" : "#EA6488",
+                      }}
+                      aria-valuenow={activeCourse.progress}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                  <span className="text-muted ms-2">{activeCourse.progress}%</span>
+                </div>
+                <hr className="custom-hr" />
+                <ul className="learn-list mt-1">
+                  {course.items.map((item) => (
+                    <li
+                      key={item.id}
+                      className={`learn-list-item d-flex align-items-center ${
+                        selectedItem === item.id ? "active" : ""
+                      }`}
+                      onClick={() => handleMateriClick(item)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <span className="icon ms-3 me-3">
+                        {item.type === "materi" ? (
+                          <img src="/materi.png" alt="Materi" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
+                        ) : (
+                          <img src="/quiz.png" alt="Quiz" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
+                        )}
+                      </span>
+                      {item.name}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p>No active course available.</p>
+            )}
           </div>
         </div>
       </div>

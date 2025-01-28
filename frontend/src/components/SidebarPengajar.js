@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -53,7 +53,7 @@ const SidebarPengajar = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       return response.data.map((materi) => ({
         id: incrementalId.current++,
         id_item: materi.id_materi,
@@ -63,7 +63,22 @@ const SidebarPengajar = () => {
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
-      return [];
+      return []; // Return an empty array on error to prevent issues in Promise.all
+    }
+  };
+  
+  const fetchQuizData = async (idQuiz) => {
+    try {
+      const response = await api.get(`/quizzes/${idQuiz}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching quiz data:', error);
+      Swal.fire('Error', 'Failed to fetch quiz data. Please try again later.', 'error');
     }
   };
 
@@ -85,21 +100,6 @@ const SidebarPengajar = () => {
       console.error('Error fetching quiz:', error);
       Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
       return [];
-    }
-  };
-
-  const fetchQuizData = async (idQuiz) => {
-    try {
-      const response = await api.get(`/quizzes/${idQuiz}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching quiz data:', error);
-      Swal.fire('Error', 'Failed to fetch quiz data. Please try again later.', 'error');
     }
   };
 
@@ -125,6 +125,15 @@ const SidebarPengajar = () => {
 
   useEffect(() => {
     if (id) {
+      fetchCourse();
+      fetchAllData();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchMateriByCourse();
+      fetchQuizByCourse();
       fetchCourse();
       fetchAllData();
     }
