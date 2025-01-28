@@ -33,7 +33,7 @@ const getCourseById = async (req, res) => {
         {
           model: Pengajar,
           as: 'pengajar',
-          attributes: ['nama'], 
+          attributes: ['nama'],
         },
       ],
     });
@@ -55,15 +55,11 @@ const createCourse = async (req, res) => {
     const { id_pengajar, nama_course, enrollment_key, deskripsi } = req.body;
 
     if (!req.file) {
-      return res.status(402).json({ message: 'Harap unggah gambar course.' });
-    }
-
-    const gambar_course = req.file.filename;
-
-    const existingCourse = await Course.findOne({ where: { nama_course } });
-    if (existingCourse) {
-      return res.status(401).json({ message: 'Nama course sudah terdaftar, silakan gunakan nama lain.' });
+      return res.status(400).json({ message: 'Harap unggah gambar course.' });
+    } else if (await Course.findOne({ where: { nama_course } })) {
+      return res.status(400).json({ message: 'Nama course sudah terdaftar, silakan gunakan nama lain.' });
     } else {
+      const gambar_course = req.file.filename;
       const course = await Course.create({
         id_pengajar,
         nama_course,
@@ -72,8 +68,9 @@ const createCourse = async (req, res) => {
         deskripsi,
       });
 
-      res.status(201).json({ message: 'Course created successfully.', course });
+      return res.status(201).json({ message: 'Course created successfully.', course });
     }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to create course.' });

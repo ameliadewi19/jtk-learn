@@ -200,3 +200,26 @@
     visibility: visible;
 }
 
+.custom-confirm-button {
+    background-color: #6488EA !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 8px !important; 
+}
+
+.custom-confirm-button:hover {
+    background-color: #5072c9 !important;
+}
+
+.custom-cancel-button {
+    background-color: #ff6384 !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 8px !important; 
+}
+
+.custom-cancel-button:hover {
+    background-color: #ff4a6e !important;
+}
