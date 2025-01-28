@@ -7,7 +7,6 @@ import DashboardPengajar from "./pages/DashboardPengajarPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MempelajariCoursePage from "./pages/MempelajariCoursePage";
-import SidebarPelajar from './components/SidebarPelajar';
 import SidebarPengajar from "./components/SidebarPengajar";
 import CoursePengajar from "./pages/CoursePengajarPage";
 import CourseOverviewPage from "./pages/CourseOverviewPage";
@@ -40,7 +39,7 @@ function App() {
                     path="/learn-course/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pelajar']}>
-                        <SidebarPelajar />
+                        <MempelajariCoursePage />
                       </ProtectedRoute>
                     }
                   />
@@ -81,6 +80,14 @@ function App() {
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
                         <CoursePengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-courses"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <MyCoursesPage />
                       </ProtectedRoute>
                     }
                   />

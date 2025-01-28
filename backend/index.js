@@ -23,9 +23,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Use the routers
 app.use('/auth', authRouter);
 app.use('/users', authenticate, userRouter);
-app.use('/courses', authenticate, authorizeRole(['pengajar', 'pelajar']), courseRouter);
-app.use('/materials', authenticate, authorizeRole(['pengajar', 'pelajar']), materialRouter);
-app.use('/participant', authenticate, authorizeRole(['pengajar', 'pelajar']), participantRouter);
+app.use('/courses', authenticate, authorizeRole(['pengajar','pelajar']), courseRouter);
+app.use('/materials', authenticate, authorizeRole(['pengajar','pelajar']), materialRouter);
+app.use('/participant', authenticate, authorizeRole(['pelajar']), participantRouter);
 app.use('/quizzes', authenticate, quizRouter);
 app.use('/detail-history-quiz', authenticate, detailHistoryQuizRouter);
 app.use('/history-quiz', authenticate, historyQuizRouter);

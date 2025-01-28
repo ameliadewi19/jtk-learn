@@ -1,4 +1,4 @@
-const { Materi, Course } = require('../models');
+const { Materi, Course, HistoryMateri } = require('../models');
 
 const getAllMateri = async (req, res) => {
   try {
@@ -82,6 +82,51 @@ const deleteMateri = async (req, res) => {
   }
 };
 
+const createHistoryMateri = async (req, res) => {
+  try {
+      const { id_pelajar, id_materi, waktu_akses } = req.body;
+
+      const newHistoryMateri = await HistoryMateri.create({
+          id_pelajar,
+          id_materi,
+          waktu_akses,
+      });
+
+      res.status(201).json({
+          message: 'HistoryMateri created successfully.',
+          historyMateri: newHistoryMateri,
+      });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+const updateHistoryMateri = async (req, res) => {
+  try {
+      const { id_pelajar, id_materi } = req.params;
+      const { waktu_akses } = req.body;
+
+      // Cari data berdasarkan id_pelajar dan id_materi
+      const historyMateri = await HistoryMateri.findOne({
+          where: { id_pelajar, id_materi },
+      });
+
+      if (!historyMateri) {
+          return res.status(404).json({ message: 'HistoryMateri not found.' });
+      }
+
+      // Update data langsung menggunakan instance model
+      await historyMateri.update({ waktu_akses });
+
+      res.status(200).json({
+          message: 'HistoryMateri updated successfully.',
+          historyMateri,
+      });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
 //fetch one data material by id
 const getMateriById = async (req, res) => {
   try {
@@ -101,10 +146,13 @@ const getMateriById = async (req, res) => {
   }
 };
 
-module.exports = {
-  getAllMateri,
-  createMateri,
-  updateMateri,
-  deleteMateri,
-  getMateriById,
+
+module.exports = { 
+    getAllMateri, 
+    createMateri, 
+    updateMateri, 
+    deleteMateri,
+    getMateriById,
+    createHistoryMateri,
+    updateHistoryMateri 
 };
