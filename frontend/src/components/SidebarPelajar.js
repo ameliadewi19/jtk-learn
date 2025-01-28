@@ -16,7 +16,6 @@ const SidebarPelajar = () => {
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
   const [courseData, setCourseData] = useState({});
-  const [selectedItem, setSelectedItem] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
