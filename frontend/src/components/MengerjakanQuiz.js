@@ -7,7 +7,6 @@ import { UserContext } from "../components/UserContext";
 const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [answerdb, setAnswerdb] = useState([]);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState((quizData?.duration || 0) * 60);
   const [startTime, setStartTime] = useState(null);
@@ -48,32 +47,22 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
   const fetchQuizData = async (id_quiz) => {
     setLoading(true);
     try {
-      const soalResponse = await api.get(`/quizzes/${id_quiz}/pertanyaan`, {
+      const soalResponse = await api.get(`/quizzes/${id_quiz}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       const questionsData = soalResponse.data;
-
-      const combinedQuestions = await Promise.all(
-        questionsData.map(async (question) => {
-          const pertanyaanKe = 1;
-          const jawabanResponse = await api.get(
-            `/quizzes/${pertanyaanKe}/jawaban`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-            });
-          const answersData = jawabanResponse.data;
-          setAnswerdb(answersData);
-          
-          return {
-            ...question,
-            options: answersData.map((answer) => answer.konten_jawaban),
-          };
-        })
-      );
-      setQuestions(combinedQuestions);
+  
+      // Peta data pertanyaan dan jawaban ke format yang diinginkan
+      const mappedQuestions = questionsData.pertanyaan.map((pertanyaan, index) => ({
+        ...pertanyaan,
+        id_pertanyaan: index + 1, // Buat id unik untuk setiap pertanyaan
+        jawaban: questionsData.jawaban[index] || [], // Ambil jawaban sesuai urutan
+      }));
+  
+      setQuestions(mappedQuestions);
+      console.log("Isi pertanyaan:", mappedQuestions);
     } catch (error) {
       console.error("Error fetching quiz data:", error);
     } finally {
@@ -98,34 +87,44 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
   
     switch (question.jenis_pertanyaan) {
       case "pilihan_ganda":
-        const correctOption = answerdb.find(
-          (option) => option.status_jawaban === "benar"
+        const correctOption = question.jawaban.find(
+          (jawaban) => jawaban.status_jawaban === "benar"
         );
 
         console.log('apa coba correctOptionnya:', correctOption)
 
-        if (correctOption?.konten_jawaban === userAnswer) {
+        if (correctOption?.nama_jawaban === userAnswer) {
           score = 25;
         }
         console.log('score saat ini:', score)
         break;
   
       case "jawaban_singkat":
-        if (answerdb.konten_jawaban.toLowerCase() === userAnswer.toLowerCase()) {
-          score = 40;
-        }
-        break;
+        const correctShortAnswer = question.jawaban.find(
+            (jawaban) => jawaban.status_jawaban === "benar"
+          );
+          if (
+            correctShortAnswer?.konten_jawaban.toLowerCase() ===
+            userAnswer.toLowerCase()
+          ) {
+            score = 40;
+          }
+          break;
   
       case "operasi_matematika":
-        if (parseFloat(answerdb.konten_jawaban) === parseFloat(userAnswer)) {
-          score = 35;
-        }
-        break;
+        const correctMathAnswer = question.jawaban.find(
+            (jawaban) => jawaban.status_jawaban === "benar"
+          );
+          if (
+            parseFloat(correctMathAnswer?.konten_jawaban) === parseFloat(userAnswer)
+          ) {
+            score = 35;
+          }
+          break;
   
       default:
         break;
     }
-  
     return score;
   };
   
@@ -154,27 +153,21 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
       const waktuMulai = new Date(startTime).toISOString(); 
       const waktuSelesai = new Date().toISOString();
   
-      const filteredQuestions = questions.filter(
-        (question) => question.id_pertanyaan === 1
-      );
-
-      console.log('isi filteredQuestions:', filteredQuestions)
-
-      filteredQuestions.forEach((question) => {
-        const userAnswer = answers[question.id_pertanyaan];
-        console.log('isi userAnswer:', userAnswer)
-        
-        const questionScore = calculateScore(question, userAnswer);
-  
-        totalScore += questionScore;
-  
+      questions.forEach((question) => {
+        const userAnswer = answers[question.id_pertanyaan]; // Ambil jawaban user untuk pertanyaan ini
+        console.log('isi userAnswer:', userAnswer);
+      
+        const questionScore = calculateScore(question, userAnswer); // Hitung skor untuk pertanyaan ini
+      
+        totalScore += questionScore; // Tambahkan skor ke total skor
+      
         hasil.push({
-          id_pertanyaan: question.id_pertanyaan,
-          jawaban_user: userAnswer,
-          nilai: questionScore,
-          benar: questionScore > 0,
+          id_pertanyaan: question.id_pertanyaan, // ID pertanyaan
+          jawaban_user: userAnswer, // Jawaban pengguna
+          nilai: questionScore, // Skor untuk pertanyaan ini
+          benar: questionScore > 0, // Benar jika skornya lebih dari 0
         });
-      });  
+      });
   
       // Simpan hasil kuis (PUT atau POST)
       const historyPayload = {
@@ -244,24 +237,24 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
 
             {question.jenis_pertanyaan === "pilihan_ganda" && (
               <div>
-                {question.options.map((option, optIndex) => (
+                {question.jawaban.map((option, optIndex) => (
                   <div className="form-check" key={optIndex}>
                     <input
                       type="radio"
-                      id={`question-${question.id_pertanyaan}-option-${optIndex}`}
-                      name={`question-${question.id_pertanyaan}`}
+                      id={question-`${question.id_pertanyaan}-option-${optIndex}`}
+                      name={question-`${question.id_pertanyaan}`}
                       className="form-check-input custom-radio"
-                      value={option}
-                      checked={answers[question.id_pertanyaan] === option}
+                      value={option.nama_jawaban}
+                      checked={answers[question.id_pertanyaan] === option.nama_jawaban}
                       onChange={() =>
-                        handleInputChange(question.id_pertanyaan, option)
+                        handleInputChange(question.id_pertanyaan, option.nama_jawaban)
                       }
                     />
                     <label
-                      htmlFor={`question-${question.id_pertanyaan}-option-${optIndex}`}
+                      htmlFor={question-`${question.id_pertanyaan}-option-${optIndex}`}
                       className="form-check-label"
                     >
-                      {option}
+                      {option.konten_jawaban}
                     </label>
                   </div>
                 ))}

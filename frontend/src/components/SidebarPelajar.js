@@ -6,37 +6,20 @@ import Swal from "sweetalert2";
 import api from "../services/api";
 import { UserContext } from "../components/UserContext";
 
-const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseChange, updateCProgress}) => {
-  const [course, setCourse] = useState({
-    name: '',
-    materi: [],
-  });
+const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCProgress }) => {
+  const [course, setCourse] = useState({ name: "", items: [] });
   const { id } = useParams();
   const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
-  const [courseData, setCourseData] = useState({});
-  const [selectedMateri, setSelectedMateri] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
-  const incrementalId = useRef(0);
-
-  // const fetchCourseData = async () => {
-  //   try {
-  //     const response = await api.get(`/courses/${id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-  //     setCourseData(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching course data:', error);
-  //   }
-  // };
 
   const fetchMateriDanQuiz = async () => {
     if (!activeCourse) return;
-  
+
     try {
       const [materiResponse, quizResponse] = await Promise.all([
         api.get(`/materials/course/${activeCourse.id}`, {
@@ -46,7 +29,7 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
-  
+
       const mappedMateri = materiResponse.data?.map((materi) => ({
         id: materi.id_materi,
         name: materi.nama_materi,
@@ -54,48 +37,37 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
         type: "materi",
         content: `http://localhost:5000/uploads/materials/${materi.konten_materi}`,
       })) || [];
-  
+
       const mappedQuiz = quizResponse.data?.map((quiz) => ({
         id_quiz: quiz.id_quiz,
         name: quiz.nama_quiz,
         duration: quiz.durasi,
         type: "quiz",
       })) || [];
-  
+
       const combinedData = [...mappedMateri, ...mappedQuiz]
-        .sort((a, b) => a.id - b.id_quiz) // Urutkan berdasarkan ID asli
-        .map((item, index) => ({ ...item, new_id: index + 1 })); // Tambahkan new_id sebagai penomoran berurutan
-  
+        .sort((a, b) => a.id - b.id_quiz)
+        .map((item, index) => ({ ...item, new_id: index + 1 }));
+
       setCourse((prevCourse) => ({
         ...prevCourse,
-        materi: combinedData,
+        items: combinedData,
       }));
-  
+
       if (combinedData.length > 0) {
-        handleSetFirstItem(combinedData);
+        setSelectedItem(combinedData[0].new_id);
+        onMateriChange(combinedData[0]);
       }
     } catch (error) {
       console.error("Error fetching materi and quiz:", error);
       Swal.fire("Error", "Failed to fetch materi and quizzes. Please try again later.", "error");
     }
-  }; 
-
-  const handleSetFirstItem = (materiList) => {
-    if (materiList.length > 0) {
-      const firstItem = materiList[0]; // Ambil item pertama (sudah diurutkan)
-      setSelectedMateri(firstItem.new_id); // Gunakan new_id
-      onMateriChange(firstItem);
-    }
-  };  
+  };
 
   const verifyEnrollment = async () => {
     try {
-      console.log(user.userData.id_pelajar);
-      console.log(id);
       await api.get(`/participant/progress/${id}/${user.userData.id_pelajar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
       if (error.response?.status === 403) {
@@ -107,9 +79,7 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
   const fetchCParticipant = async () => {
     try {
       const response = await api.get(`/participant/pelajar/${user.userData.id_pelajar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const mappedCourses = response.data.map((item) => ({
@@ -117,6 +87,7 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
         title: item.course.nama_course,
         progress: item.persentase_course,
       }));
+
       setParticipant(mappedCourses);
 
       if (mappedCourses.length > 0) {
@@ -137,19 +108,20 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
 
   useEffect(() => {
     if (activeMateri) {
-      setSelectedMateri(activeMateri.new_id);
-  }}, [activeMateri]);
+      setSelectedItem(activeMateri.new_id);
+    }
+  }, [activeMateri]);
 
   useEffect(() => {
     if (id) {
       verifyEnrollment();
-      fetchAllData();
+      fetchCParticipant();
     }
   }, [id]);
 
-  const handleMateriClick = (materi) => {
-    setSelectedMateri(materi.new_id);
-    onMateriChange(materi);
+  const handleMateriClick = (item) => {
+    setSelectedItem(item.new_id);
+    onMateriChange(item);
   };
 
   return (
@@ -162,12 +134,9 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
           data-bs-toggle="collapse"
           data-bs-target="#sidebarMenu"
           aria-controls="sidebarMenu"
-          aria-expanded={isOpen ? 'true' : 'false'}
+          aria-expanded={isOpen ? "true" : "false"}
           aria-label="Toggle navigation"
-          style={{
-            backgroundColor: "#f8f9fa",
-            border: "none",
-          }}
+          style={{ backgroundColor: "#f8f9fa", border: "none" }}
         >
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -195,23 +164,23 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
                 </div>
                 <hr className="custom-hr" />
                 <ul className="learn-list mt-1">
-                  {course.materi.map((materi) => (
+                  {course.items.map((item) => (
                     <li
-                      key={materi.new_id}
+                      key={item.new_id}
                       className={`learn-list-item d-flex align-items-center ${
-                        selectedMateri === materi.new_id ? "active" : ""
+                        selectedItem === item.new_id ? "active" : ""
                       }`}
-                      onClick={() => handleMateriClick(materi)}
+                      onClick={() => handleMateriClick(item)}
                       style={{ cursor: "pointer" }}
                     >
                       <span className="icon ms-3 me-3">
-                        {materi.type === "materi" ? (
-                          <img src="/materi.png" alt="Materi" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                        ) : (
-                          <img src="/quiz.png" alt="Quiz" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                        )}
+                        <img
+                          src={item.type === "materi" ? "/materi.png" : "/quiz.png"}
+                          alt={item.type === "materi" ? "Materi" : "Quiz"}
+                          style={{ width: "20px", height: "20px", marginTop: "-5px" }}
+                        />
                       </span>
-                      {materi.name}
+                      {item.name}
                     </li>
                   ))}
                 </ul>

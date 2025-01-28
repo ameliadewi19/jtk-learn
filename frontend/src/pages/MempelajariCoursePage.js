@@ -67,7 +67,7 @@ const MempelajariCoursePage = () => {
 
   const handleMateriNext = () => {
     const currentIndex = courseMateri.findIndex(
-      (m) => m.id === activeMateri.id
+      (m) => m.new_id === activeMateri.new_id
     );
     const nextIndex = currentIndex + 1;
 

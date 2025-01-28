@@ -199,56 +199,6 @@ const deleteQuiz = async (req, res) => {
     }
 };
 
-// Get Pertanyaan by Quiz ID
-const getPertanyaanByQuizId = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const pertanyaan = await Pertanyaan.findAll({
-      where: { id_quiz:id },
-      include: [
-        {
-          model: Quiz,
-          as: 'quiz',
-        },
-      ],
-    });
-
-    if (!pertanyaan || pertanyaan.length === 0) {
-      return res.status(404).json({ message: 'No questions found for the specified quiz ID.' });
-    }
-
-    res.status(200).json(pertanyaan);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Get Jawaban by Pertanyaan ID 
-const getJawabanByPertanyaanId = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const jawaban = await Jawaban.findAll({
-      where: { id_pertanyaan: id },
-      include: [
-        {
-          model: Pertanyaan,
-          as: 'pertanyaan',
-        },
-      ],
-    });
-
-    if (!jawaban || jawaban.length === 0) {
-      return res.status(404).json({ message: 'No answers found for the specified question ID.' });
-    }
-
-    res.status(200).json(jawaban);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Get history quiz by ID
 const getHistoryQuizByID = async (req, res) => {
   try {
@@ -327,8 +277,6 @@ module.exports = {
     createQuiz, 
     updateQuiz, 
     deleteQuiz,
-    getPertanyaanByQuizId,
-    getJawabanByPertanyaanId,
     getHistoryQuizByID,
     upsertHistoryQuiz 
 };
