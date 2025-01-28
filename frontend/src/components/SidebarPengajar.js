@@ -6,6 +6,8 @@ import { FaEllipsisV, FaGripVertical } from 'react-icons/fa';
 import Swal from "sweetalert2";
 import api from "../services/api";
 import QuizModal from "./QuizModal";
+import MaterialModal from './MaterialModal';
+
 
 const SidebarPengajar = () => {
   const { id } = useParams(); // Get the id from the URL parameters
@@ -18,10 +20,13 @@ const SidebarPengajar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [materialInitialData, setMaterialInitialData] = useState(null);
   const [quizInitialData, setQuizInitialData] = useState(null);
+  const [isEditMaterial, setIsEditMaterial] = useState(false);
   const [isEditQuiz, setIsEditQuiz] = useState(false);
   const token = localStorage.getItem('token');
-  const incrementalId = useRef(0); // Use useRef for incrementalId
+  const incrementalId = useRef(0);
 
   const fetchCourse = async () => {
     try {
@@ -50,9 +55,10 @@ const SidebarPengajar = () => {
       });
   
       return response.data.map((materi) => ({
-        id: materi.id_materi,
+        id: incrementalId.current++,
+        id_item: materi.id_materi,
         name: materi.nama_materi,
-        type: "materi",
+        type: 'materi',
       }));
     } catch (error) {
       console.error('Error fetching materi:', error);
@@ -97,6 +103,21 @@ const SidebarPengajar = () => {
     }
   };
 
+  const fetchMaterialData = async (idMateri) => {
+    try {
+      const response = await api.get(`/materials/${idMateri}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching material data:', error);
+      Swal.fire('Error', 'Failed to fetch material data. Please try again later.', 'error');
+    }
+  };
+
   const fetchAllData = async () => {
     const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
     setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
@@ -135,17 +156,12 @@ const SidebarPengajar = () => {
       setIsEditQuiz(true);
       setShowQuizModal(true);
     } else {
-      alert(`Edit ${item.name}`);
-    }
-    if (item.type === 'quiz') {
-      fetchQuizData(item.id_item)
+      fetchMaterialData(item.id_item)
         .then((data) => {
-          setQuizInitialData(data);
+          setMaterialInitialData(data);
         })
-      setIsEditQuiz(true);
-      setShowQuizModal(true);
-    } else {
-      alert(`Edit ${item.name}`);
+      setIsEditMaterial(true);
+      setShowMaterialModal(true);
     }
   };
 
@@ -162,7 +178,37 @@ const SidebarPengajar = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         if (item.type === 'materi') {
-          alert(`Delete Materi: ${item.name}`);
+          api.delete(`/materials/${item.id_item}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+            .then(() => {
+              setCourse((prevCourse) => ({
+                ...prevCourse,
+                items: prevCourse.items.filter((i) => i.id !== item.id),
+              }));
+              Swal.fire({
+                title: 'Success!',
+                text: 'Course material deleted successfully.',
+                icon: 'success',
+                confirmButtonText: 'Close',
+                customClass: {
+                  confirmButton: 'custom-confirm-button',
+                },
+              })
+            })
+            .catch((error) => {
+              console.error('Error deleting course material:', error);
+              Swal.fire({
+                title: 'Error',
+                text: 'Failed to delete course material. Please try again later.', icon: 'error',
+                confirmButtonText: 'Close',
+                customClass: {
+                  confirmButton: 'custom-confirm-button',
+                },
+              });
+            });
         } else {
           api.delete(`/quizzes/${item.id_item}`, {
             headers: {
@@ -186,7 +232,9 @@ const SidebarPengajar = () => {
   };
 
   const handleAddMaterial = () => {
-    alert("Add Material");
+    setMaterialInitialData(null);
+    setIsEditMaterial(false);
+    setShowMaterialModal(true);
   };
 
   const handleAddQuiz = () => {
@@ -243,6 +291,56 @@ const SidebarPengajar = () => {
     }
     setShowQuizModal(false);
     fetchQuizByCourse(); // Refetch quiz data after submission
+  };
+
+  const handleMaterialSubmit = (data) => {
+    try {
+      if (isEditMaterial) {
+        api.put(`/materials/${data.id_materi}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(() => {
+            setCourse((prevCourse) => ({
+              ...prevCourse,
+              items: prevCourse.items.map((item) => {
+                if (item.id === data.id_materi) {
+                  return { ...item, name: data.nama_materi };
+                }
+                return item;
+              }),
+            }));
+            Swal.fire('Success', 'Material has been updated successfully.', 'success');
+          })
+          .catch((error) => {
+            console.error('Error updating material:', error);
+            Swal.fire('Error', 'Failed to update material. Please try again later.', 'error');
+          });
+      } else {
+        api.post('/materials', data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => {
+            setCourse((prevCourse) => ({
+              ...prevCourse,
+              items: [...prevCourse.items, { id: incrementalId.current++, name: data.nama_materi, type: 'materi' }],
+            }));
+            Swal.fire('Success', 'Materi berhasil ditambahkan!', 'success');
+          })
+          .catch((error) => {
+            console.error('Error creating material:', error);
+            Swal.fire('Error', 'Failed to create material. Please try again later.', 'error');
+          });
+      }
+    } catch (error) {
+      console.error('Error submitting material:', error);
+      Swal.fire('Error', 'Failed to submit material. Please try again later.', 'error');
+    }
+    setShowMaterialModal(false);
+    fetchMateriByCourse(); // Refetch material data after submission
   };
 
   const toggleSidebar = () => {
@@ -373,6 +471,12 @@ const SidebarPengajar = () => {
         onClose={() => setShowQuizModal(false)}
         onSubmit={handleQuizSubmit}
         initialData={isEditQuiz ? quizInitialData : null}
+      />
+      <MaterialModal
+        show={showMaterialModal}
+        onClose={() => setShowMaterialModal(false)}
+        onSubmit={handleMaterialSubmit}
+        initialData={isEditMaterial ? materialInitialData : null}
       />
     </nav>
   );

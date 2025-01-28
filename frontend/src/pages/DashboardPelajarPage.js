@@ -61,7 +61,7 @@ const DashboardPelajar = () => {
               <div
                 key={course.id}
                 className="col-12 col-sm-6 col-lg-3"
-                onClick={() => handleCourseClick(course.id)}
+                onClick={() => navigate(`/course/${course.id}`)}
               >
                 <div className="card custom-card">
                   <img

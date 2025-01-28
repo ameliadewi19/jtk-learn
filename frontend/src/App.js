@@ -24,122 +24,89 @@ function App() {
           <Route
             path="*"
             element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <DashboardPelajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard-pengajar"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <DashboardPengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard-pelajar"
-            element={
-              <ProtectedRoute allowedRoles={["pelajar"]}>
-                <DashboardPelajar />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/learn-course/:id"
-            element={
-              <ProtectedRoute allowedRoles={['pelajar']}>
-                <>
-                  <Navbar />
-                  <SidebarPelajar />
-                  <MempelajariCoursePage />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit-course/:id"
-            element={
-              <ProtectedRoute allowedRoles={["pengajar"]}>
-                <SidebarPengajar />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/create-course"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <CoursePengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit-info-course/:id"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <CoursePengajar />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/course/:id"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <CourseOverviewPage />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-courses"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <MyCoursesPage />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/summary-quiz"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <SummaryQuiz />
-                </>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/summary-quiz/:id"
-            element={
-              <ProtectedRoute>
-                <>
-                  <Navbar />
-                  <DetailSummaryQuiz />
-                </>
-              </ProtectedRoute>
+              <>
+                <Navbar />
+                <Routes>
+                  <Route
+                    path="/dashboard-pelajar"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <DashboardPelajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/learn-course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <SidebarPelajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar', 'pengajar']}>
+                        <CourseOverviewPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard-pengajar"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <DashboardPengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/edit-course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <SidebarPengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/create-course"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <CoursePengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/edit-info-course/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                        <CoursePengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/summary-quiz"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                          <SummaryQuiz />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/summary-quiz/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                          <DetailSummaryQuiz />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </>
             }
           />
         </Routes>
       </Router>
-    </UserProvider>
+
+    </UserProvider >
   );
 }
 
