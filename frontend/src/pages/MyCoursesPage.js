@@ -29,7 +29,6 @@ const MyCoursesPage = () => {
                     const course = {
                         id: item.course.id_course,
                         title: item.course.nama_course,
-                        description: item.course.deskripsi,
                         author: item.course.pengajar.nama,
                         image: `/uploads/images/${item.course.gambar_course}`,
                         progress: item.persentase_course,
@@ -51,7 +50,7 @@ const MyCoursesPage = () => {
         };
     
         fetchCourses();
-    }, []);    
+    }, [token, user.userData.id_pelajar]);    
     
     if (loading) return <p>Loading...</p>;
 
@@ -130,8 +129,8 @@ const MyCoursesPage = () => {
                                                                 role="progressbar"
                                                                 style={{
                                                                     width: `${course.progress}%`,
-                                                                    backgroundColor: course.progress === 0 ? '#6488EA' : '#EA6488',
-                                                                }}
+                                                                    // backgroundColor: course.progress === 0 ? '#6488EA' : '#EA6488',
+                                                                }}                                                                                                                               
                                                                 aria-valuenow={course.progress}
                                                                 aria-valuemin="0"
                                                                 aria-valuemax="100"

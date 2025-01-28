@@ -1,7 +1,7 @@
 .sidebar-container {
     width: 300px;
     background-color: #ffffff;
-    height: 100vh;
+    height:100vh;
     border-right: 1px solid #dee2e6;
     transition: transform 0.3s ease-in-out;
     /* z-index: 10; */
@@ -39,7 +39,6 @@
   .learn-list-item.active {
     border-radius: 10px;
     background-color: #6488EA !important;
-    /* color: white; */
     font-weight: bold;
   }
 
