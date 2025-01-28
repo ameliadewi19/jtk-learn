@@ -39,7 +39,7 @@ function App() {
                     path="/learn-course/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pelajar']}>
-                        <SidebarPelajar />
+                        <MempelajariCoursePage />
                       </ProtectedRoute>
                     }
                   />
@@ -80,6 +80,14 @@ function App() {
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
                         <CoursePengajar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-courses"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <MyCoursesPage />
                       </ProtectedRoute>
                     }
                   />

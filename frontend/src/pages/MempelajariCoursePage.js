@@ -1,6 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SidebarPelajar from "../components/SidebarPelajar";
+import MelihatMateri from "../components/MelihatMateri";
+import MengerjakanQuiz from "../components/MengerjakanQuiz";
 import api from "../services/api";
 import Swal from "sweetalert2";
 import { UserContext } from "../components/UserContext";
@@ -9,6 +11,8 @@ const MempelajariCoursePage = () => {
   const [courseMateri, setCourseMateri] = useState([]);
   const [activeMateri, setActiveMateri] = useState(null);
   const [activeCourse, setActiveCourse] = useState(null);
+  const [isQuizMode, setIsQuizMode] = useState(false);
+  const [progressMap, setProgressMap] = useState({});
   const { user } = useContext(UserContext);
   const token = localStorage.getItem("token");
 
@@ -58,6 +62,7 @@ const MempelajariCoursePage = () => {
 
   const handleMateriChange = (materi) => {
     setActiveMateri(materi);
+    setIsQuizMode(materi?.type === "quiz");
   };
 
   const handleMateriNext = () => {
@@ -72,12 +77,31 @@ const MempelajariCoursePage = () => {
     handleProgressUpdate();
   };
 
+  const handleQuizSubmit = (answers) => {
+    console.log("Quiz submitted:", answers);
+
+    Swal.fire("Success", "Your answers have been submitted!", "success");
+    setIsQuizMode(false);
+  };
+
   const updateCProgress = (courseId, progress) => {
-    setActiveCourse((prevCourse) => ({
-      ...prevCourse,
-      progress: progress,
+    setProgressMap((prevMap) => ({
+      ...prevMap,
+      [courseId]: progress,
     }));
   };
+
+  const handleCourseChange = (course) => {
+    setActiveCourse(course);
+    setActiveMateri(null);
+    setIsQuizMode(false);
+  };
+
+  useEffect(() => {
+    if (activeMateri && activeMateri.type === "quiz") {
+      setIsQuizMode(true);
+    }
+  }, [activeMateri]);
 
   return (
     <div
@@ -93,70 +117,28 @@ const MempelajariCoursePage = () => {
           onMateriChange={handleMateriChange} // mengubah materi aktif
           onLoadMateri={setCourseMateri} // mengisi daftar materi
           activeMateri={activeMateri}
-          onCourseChange={setActiveCourse}
+          onCourseChange={handleCourseChange}
           updateCProgress={updateCProgress}
         />
       </div>
-
       <div className="flex-grow-1 d-flex align-items-center justify-content-center p-4 border-main-content">
-        <div
-          className="content-box position-relative p-4 w-100"
-          style={{ maxWidth: "1300px" }}
-        >
-          {activeMateri ? (
-            <>
-              <h3 className="position-absolute material-title">
-                {activeMateri.name}
-              </h3>
-
-              <div
-                className="d-flex align-items-center justify-content-center"
-                style={{
-                  height: "70vh",
-                }}
-              >
-                {activeMateri.type === "teks" ? (
-                  <iframe
-                    src={activeMateri.content}
-                    title="PDF Viewer"
-                    style={{
-                      width: "90%",
-                      height: "100%",
-                      border: "none",
-                    }}
-                    onError={() =>
-                      Swal.fire("Error", "File PDF doesn't exist.", "error")
-                    }
-                  ></iframe>
-                ) : (
-                  <video
-                    controls
-                    style={{
-                      width: "90%",
-                      maxWidth: "1200px",
-                      height: "auto",
-                      backgroundColor: "#000",
-                    }}
-                    title="Video Player"
-                  >
-                    <source src={activeMateri.content} type="video/mp4" />
-                    Browser Anda tidak mendukung video.
-                  </video>
-                )}
-              </div>
-
-              <button
-                className="btn position-absolute course-next-button d-flex align-items-center"
-                onClick={handleMateriNext}
-              >
-                Next
-                <span className="next-button">&gt;</span>
-              </button>
-            </>
+        {activeMateri ? (
+          isQuizMode ? (
+            <MengerjakanQuiz
+              quizData={activeMateri} // Kirim data quiz aktif
+              onSubmitQuiz={handleQuizSubmit} // Callback untuk submit quiz
+            />
           ) : (
-            <p>Pilih materi dari sidebar untuk memulai.</p>
-          )}
-        </div>
+            <MelihatMateri
+              activeMateri={activeMateri} // Kirim data materi aktif
+              handleMateriNext={handleMateriNext} // Callback untuk navigasi ke materi berikutnya
+            />
+          )
+        ) : (
+          <div className="text-center">
+            <h4>Silakan pilih materi atau quiz dari sidebar.</h4>
+          </div>
+        )}
       </div>
     </div>
   );

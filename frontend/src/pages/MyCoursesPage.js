@@ -58,8 +58,8 @@ const MyCoursesPage = () => {
         setActiveTab(tab);
     };
 
-    const handleCourseClick = () => {
-        navigate(`/learn-course`);
+    const handleCourseClick = (id) => {
+        navigate(`/learn-course/${id}`);
     };
 
     return(
