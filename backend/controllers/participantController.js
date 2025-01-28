@@ -23,14 +23,35 @@ const getCParticipantByStudent = async (req, res) => {
             ],
         });
         if (courseParticipants.length === 0) {
-            return res.status(404).json({ message: 'No courses found for this student.' });
+            return res.status(404).json({ message: 'No course participant found.' });
         }
       
         res.status(200).json(courseParticipants);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to fetch courses for the student.' });
+        res.status(500).json({ message: 'Failed to fetch course participant.' });
     }
+};
+
+const updateParticipant = async (req, res) => {
+  try {
+    const { id_pelajar, id_course } = req.body;
+    const { persentase_course, status_penyelesaian } = req.body;
+
+    const courseParticipant = await CourseParticipant.findOne({
+      where: { id_pelajar, id_course },
+    });
+
+    if (courseParticipant.length === 0) {
+      return res.status(404).json({ message: 'No course participant found.' });
+    }   
+    
+    await courseParticipant.update({ persentase_course, status_penyelesaian });
+    res.status(200).json({ message: 'Course participant updated successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to update course participant.' });
+  }
 };
 
 const getProgressByCourse= async (req, res) => {
@@ -77,5 +98,6 @@ const enrollCourse = async (req, res) => {
 module.exports = {
     getCParticipantByStudent,
     getProgressByCourse,
-    enrollCourse
+    enrollCourse,
+    updateParticipant
 }

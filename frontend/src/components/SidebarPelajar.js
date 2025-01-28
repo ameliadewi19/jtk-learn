@@ -1,10 +1,11 @@
+import React, { useState, useContext, useEffect } from "react";
 import React, { useState, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../services/api";
+import { UserContext } from "../components/UserContext";
 import { UserContext } from '../components/UserContext';
 
 const SidebarPelajar = () => {
@@ -88,12 +89,12 @@ const SidebarPelajar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg" style={{ padding: '0px 0px' }}>
-      <div className="container-fluid" style={{ padding: '0px 0px' }}>
+    <nav className="navbar navbar-expand-lg" style={{ padding: "0px 0px" }}>
+      <div className="container-fluid h-100 d-flex" style={{ padding: "0px 0px" }}>
         <button
           className="navbar-toggler d-lg-none"
           type="button"
-          onClick={toggleSidebar}
+          onClick={() => setIsOpen(!isOpen)}
           data-bs-toggle="collapse"
           data-bs-target="#sidebarMenu"
           aria-controls="sidebarMenu"
