@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -13,7 +13,7 @@ const SidebarPengajar = () => {
     name: "",
     items: [],
   });
-  const [selectedMateri, setSelectedMateri] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
@@ -21,7 +21,7 @@ const SidebarPengajar = () => {
   const [quizInitialData, setQuizInitialData] = useState(null);
   const [isEditQuiz, setIsEditQuiz] = useState(false);
   const token = localStorage.getItem('token');
-  let incrementalId = 0;
+  const incrementalId = useRef(0); // Use useRef for incrementalId
 
   const fetchCourse = async () => {
     try {
@@ -39,7 +39,7 @@ const SidebarPengajar = () => {
       console.error('Error fetching course:', error);
       Swal.fire('Error', 'Failed to fetch course. Please try again later.', 'error');
     }
-  }
+  };
 
   const fetchMateriByCourse = async () => {
     try {
@@ -48,49 +48,19 @@ const SidebarPengajar = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      const mappedMateri = response.data.map((materi) => ({
-        id: incrementalId++,
-        id_item: materi.id_materi,
+  
+      return response.data.map((materi) => ({
+        id: materi.id_materi,
         name: materi.nama_materi,
         type: "materi",
-      }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        items: mappedMateri,
       }));
     } catch (error) {
       console.error('Error fetching materi:', error);
       Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      return []; // Return an empty array on error to prevent issues in Promise.all
     }
   };
-
-  const fetchQuizByCourse = async () => {
-    try {
-      const response = await api.get(`/quizzes/course/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const mappedQuiz = response.data.map((quiz) => ({
-        id: incrementalId++,
-        id_item: quiz.id_quiz,
-        name: quiz.nama_quiz,
-        type: 'quiz',
-      }));
-
-      setCourse((prevCourse) => ({
-        ...prevCourse,
-        items: [...prevCourse.items, ...mappedQuiz],
-      }));
-    } catch (error) {
-      console.error('Error fetching quiz:', error);
-      Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
-    }
-  };
-
+  
   const fetchQuizData = async (idQuiz) => {
     try {
       const response = await api.get(`/quizzes/${idQuiz}`, {
@@ -106,16 +76,50 @@ const SidebarPengajar = () => {
     }
   };
 
+  const fetchQuizByCourse = async () => {
+    try {
+      const response = await api.get(`/quizzes/course/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data.map(quiz => ({
+        id: incrementalId.current++,
+        id_item: quiz.id_quiz,
+        name: quiz.nama_quiz,
+        type: 'quiz',
+      }));
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
+      return [];
+    }
+  };
+
+  const fetchAllData = async () => {
+    const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
+    setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
+  };
+
   useEffect(() => {
     if (id) {
       fetchCourse();
+      fetchAllData();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
       fetchMateriByCourse();
       fetchQuizByCourse();
+      fetchCourse();
+      fetchAllData();
     }
   }, [id]);
 
   const handleClick = (item) => {
-    setSelectedMateri(item.id);
+    setSelectedItem(item.id);
   };
 
   const handleDropdownToggle = (id) => {
@@ -123,6 +127,16 @@ const SidebarPengajar = () => {
   };
 
   const handleEdit = (item) => {
+    if (item.type === 'quiz') {
+      fetchQuizData(item.id_item)
+        .then((data) => {
+          setQuizInitialData(data);
+        })
+      setIsEditQuiz(true);
+      setShowQuizModal(true);
+    } else {
+      alert(`Edit ${item.name}`);
+    }
     if (item.type === 'quiz') {
       fetchQuizData(item.id_item)
         .then((data) => {
@@ -194,20 +208,17 @@ const SidebarPengajar = () => {
               ...prevCourse,
               items: prevCourse.items.map((item) => {
                 if (item.id_item === data.id_quiz) {
-                  return { ...item, name: data.name };
+                  return { ...item, name: data.nama_quiz };
                 }
                 return item;
-              }
-              ),
+              }),
             }));
             Swal.fire('Success', 'Quiz has been updated successfully.', 'success');
-          }
-          )
+          })
           .catch((error) => {
             console.error('Error updating quiz:', error);
             Swal.fire('Error', 'Failed to update quiz. Please try again later.', 'error');
-          }
-          );
+          });
       } else {
         api.post('/quizzes', data, {
           headers: {
@@ -217,23 +228,21 @@ const SidebarPengajar = () => {
           .then((response) => {
             setCourse((prevCourse) => ({
               ...prevCourse,
-              items: [...prevCourse.items, { id: incrementalId++, id_item: response.data.id_quiz, name: data.name, type: 'quiz' }],
+              items: [...prevCourse.items, { id: incrementalId.current++, id_item: response.data.id_quiz, name: data.nama_quiz, type: 'quiz' }],
             }));
             Swal.fire('Success', 'Quiz has been created successfully.', 'success');
-          }
-          )
+          })
           .catch((error) => {
             console.error('Error creating quiz:', error);
             Swal.fire('Error', 'Failed to create quiz. Please try again later.', 'error');
-          }
-          );
+          });
       }
     } catch (error) {
       console.error('Error submitting quiz:', error);
       Swal.fire('Error', 'Failed to submit quiz. Please try again later.', 'error');
     }
     setShowQuizModal(false);
-    fetchQuizByCourse();
+    fetchQuizByCourse(); // Refetch quiz data after submission
   };
 
   const toggleSidebar = () => {
@@ -297,7 +306,7 @@ const SidebarPengajar = () => {
               {course.items.map((item) => (
                 <li
                   key={item.id}
-                  className={`learn-list-item d-flex align-items-center ${selectedMateri === item.id ? "active" : ""}`}
+                  className={`learn-list-item d-flex align-items-center ${selectedItem === item.id ? "active" : ""}`}
                   onClick={() => handleClick(item)}
                   style={{ cursor: "pointer" }}
                   draggable

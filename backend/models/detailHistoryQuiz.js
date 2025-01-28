@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 autoIncrement: true,
+                allowNull: false,
             },
             id_history_quiz: {
                 type: DataTypes.INTEGER,
@@ -49,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: 'DetailHistoryQuiz',
-            tableName: 'detail_history_quiz',
+            tableName: 'detailHistoryQuiz',
             timestamps: true,
         }
     );

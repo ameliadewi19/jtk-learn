@@ -1,0 +1,33 @@
+.custom-result-table {
+    width: 100%;
+    margin: 50px 0;
+}
+
+.custom-result-table th {
+    text-align: center;
+    background-color: #D9D9D9;
+    color: black;
+    padding: 10px;
+    border: 1px solid black;
+}
+
+.custom-result-table td {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid black;
+    width: 10%;
+}
+
+.custom-result-table td:nth-child(1) {
+    width: 5%;
+}
+
+.custom-result-table td:nth-child(2) {
+    width: 20%;
+    text-align: left;
+}
+
+.points {
+    font-weight: normal;
+    font-size: 16px;
+}

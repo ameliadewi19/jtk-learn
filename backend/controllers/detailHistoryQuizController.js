@@ -1,6 +1,6 @@
-const { DetailHistoryQuiz, HistoryQuiz, Pelajar } = require('../models');
+const { DetailHistoryQuiz, HistoryQuiz, Pelajar, Pertanyaan } = require('../models');
 
-const getDetailHistoryQuizData = async (req) => {
+const getDetailHistoryQuizData = async (req, res) => {
     try {
         const { id_quiz } = req.params;
         const detailHistoryQuizData = await DetailHistoryQuiz.findAll({
@@ -18,13 +18,44 @@ const getDetailHistoryQuizData = async (req) => {
                     ],
                     attributes: ['nilai'], // Get the total grades
                 },
+                {
+                    model: Pertanyaan,
+                    as: 'pertanyaan',
+                    attributes: ['jenis_pertanyaan'], // Get the question type
+                },
             ],
-            attributes: ['id_detail_history_quiz', 'status'], // Get the status
+            attributes: ['status'], // Get the status
         });
 
-        return detailHistoryQuizData;
+        // Transform the data into the desired structure
+        const transformedData = detailHistoryQuizData.reduce((acc, item) => {
+            const studentName = item.history_quiz.pelajar.nama;
+            const nilai = item.history_quiz.nilai;
+            const jenisPertanyaan = item.pertanyaan.jenis_pertanyaan;
+            const status = item.status;
+
+            let student = acc.find(s => s.student_name === studentName);
+            if (!student) {
+                student = {
+                    student_name: studentName,
+                    nilai: nilai,
+                    detail: []
+                };
+                acc.push(student);
+            }
+
+            student.detail.push({
+                jenis_pertanyaan: jenisPertanyaan,
+                status: status
+            });
+
+            return acc;
+        }, []);
+
+        res.json(transformedData);
     } catch (error) {
         console.error('Error fetching detail history quiz data:', error);
+        res.status(500).json({ error: 'Failed to fetch detail history quiz data' });
     }
 }
 

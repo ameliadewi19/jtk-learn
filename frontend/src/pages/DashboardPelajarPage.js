@@ -40,6 +40,10 @@ const DashboardPelajar = () => {
     fetchCourses();
   }, []);
 
+  const handleCourseClick = (id) => {
+    navigate(`/learn-course/${id}`);
+  };
+
   if (loading) {
     return <div className="text-center mt-5">Loading...</div>;
   }
@@ -55,8 +59,9 @@ const DashboardPelajar = () => {
           {courseList.length > 0 ? (
             courseList.map((course) => (
               <div
+                key={course.id}
                 className="col-12 col-sm-6 col-lg-3"
-                onClick={() => navigate(`/course/${course.id}`)}
+                onClick={() => handleCourseClick(course.id)}
               >
                 <div className="card custom-card">
                   <img
