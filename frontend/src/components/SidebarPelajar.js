@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useParams, useNavigate } from "react-router-dom";
@@ -12,13 +12,17 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
     materi: [],
   });
   const { id } = useParams();
-  const [activeCourse, setActiveCourse] = useState(null);
-  const [selectedMateri, setSelectedMateri] = useState(course.materi[0]?.id || null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
+  const [activeCourse, setActiveCourse] = useState(null);
+  const [course, setCourse] = useState({ materi: [] });
+  const [courseData, setCourseData] = useState({});
+  const [selectedMateri, setSelectedMateri] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
+  const incrementalId = useRef(0);
 
   // const fetchCourseData = async () => {
   //   try {
@@ -135,6 +139,10 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
   useEffect(() => {
     if (activeMateri) {
       setSelectedMateri(activeMateri.new_id);
+    if (id) {
+      verifyEnrollment();
+      fetchCourseData();
+      fetchAllData();
     }
   }, [activeMateri]);
 

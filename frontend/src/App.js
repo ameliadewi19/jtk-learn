@@ -1,26 +1,26 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { UserProvider } from './components/UserContext';
-import Navbar from './components/Navbar';
-import DashboardPelajar from './pages/DashboardPelajarPage';
-import DashboardPengajar from './pages/DashboardPengajarPage';
-import LoginPage from './pages/LoginPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import MempelajariCoursePage from './pages/MempelajariCoursePage';
-import SidebarPengajar from './components/SidebarPengajar';
-import CoursePengajar from './pages/CoursePengajarPage';
-import CourseOverviewPage from './pages/CourseOverviewPage';
-import MyCoursesPage from './pages/MyCoursesPage';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { UserProvider } from "./components/UserContext";
+import Navbar from "./components/Navbar";
+import DashboardPelajar from "./pages/DashboardPelajarPage";
+import DashboardPengajar from "./pages/DashboardPengajarPage";
+import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import MempelajariCoursePage from "./pages/MempelajariCoursePage";
+import SidebarPelajar from './components/SidebarPelajar';
+import SidebarPengajar from "./components/SidebarPengajar";
+import CoursePengajar from "./pages/CoursePengajarPage";
+import CourseOverviewPage from "./pages/CourseOverviewPage";
+import SummaryQuiz from "./pages/SummaryQuiz";
+import DetailSummaryQuiz from "./pages/DetailSummaryQuiz";
+import MyCoursesPage from "./pages/MyCoursesPage";
 
 function App() {
   return (
     <UserProvider>
       <Router>
         <Routes>
-          <Route
-            path="/"
-            element={<LoginPage />}
-          />
+          <Route path="/" element={<LoginPage />} />
           <Route
             path="*"
             element={
@@ -60,7 +60,7 @@ function App() {
                     }
                   />
                   <Route
-                    path="/edit-course"
+                    path="/edit-course/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
                         <SidebarPengajar />
@@ -84,10 +84,18 @@ function App() {
                     }
                   />
                   <Route
-                    path="/my-courses"
+                    path="/summary-quiz"
                     element={
-                      <ProtectedRoute allowedRoles={['pelajar']}>
-                        <MyCoursesPage />
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                          <SummaryQuiz />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/summary-quiz/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['pengajar']}>
+                          <DetailSummaryQuiz />
                       </ProtectedRoute>
                     }
                   />
@@ -97,7 +105,8 @@ function App() {
           />
         </Routes>
       </Router>
-    </UserProvider>
+
+    </UserProvider >
   );
 }
 

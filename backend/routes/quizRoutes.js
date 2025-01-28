@@ -11,6 +11,8 @@ const {
     upsertHistoryQuiz
 } = require('../controllers/quizController');
 const router = express.Router();
+const { getQuizByCourseId, getQuizByPengajarId, getQuizById, createQuiz, updateQuiz, deleteQuiz } = require('../controllers/quizController');
+const { authorizeRole } = require('../middleware/authorizeRole');
 
 // Routes for Quiz
 router.get('/', getAllQuiz); // Get all quiz

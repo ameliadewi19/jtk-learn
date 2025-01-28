@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
-import MessageModal from '../components/MessageModal';
+import Swal from 'sweetalert2';
 
 const CourseOverviewPage = () => {
     const [courseData, setCourseData] = useState(null);
@@ -17,11 +17,6 @@ const CourseOverviewPage = () => {
     const [enrollmentKey, setEnrollmentKey] = useState("");
     const idCourse = courseData?.id_course;
     const idPelajar = user.userData.id_pelajar;
-    const [messageModal, setMessageModal] = useState({
-        show: false,
-        type: '',
-        message: '',
-    });
 
     const fetchCourseData = async () => {
         try {
@@ -46,20 +41,23 @@ const CourseOverviewPage = () => {
             });
             setProgress(response.data);
         } catch (error) {
-            // If error is 404, it means the user has not enrolled in the course
             setProgress(null);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     const handleEnroll = async () => {
         try {
             if (!enrollmentKey) {
-                setMessageModal({
-                    show: true,
-                    type: "error",
-                    message: "Silakan masukkan enrollment key",
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Silakan masukkan enrollment key',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
                 });
                 return;
             }
@@ -79,26 +77,29 @@ const CourseOverviewPage = () => {
             );
 
             if (response.status === 201) {
-                setMessageModal({
-                    show: true,
-                    type: "success",
-                    message: response.data.message,
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: response.data.message,
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
+                }).then(() => {
+                    navigate(`/learn-course/${id}`);
                 });
             }
         } catch (error) {
             console.error(error);
-            setMessageModal({
-                show: true,
-                type: "error",
-                message: error.response?.data.message || "Terjadi kesalahan pada server.",
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data.message || 'Terjadi kesalahan pada server.',
+                confirmButtonText: 'Close',
+                customClass: {
+                    confirmButton: 'custom-confirm-button',
+                },
             });
-        }
-    };
-
-    const handleCloseMessageModal = () => {
-        setMessageModal({ show: false, type: '', message: '' });
-        if (messageModal.type === 'success') {
-            navigate(`/learn-course/${id}`);
         }
     };
 
@@ -131,7 +132,6 @@ const CourseOverviewPage = () => {
                 <div className="back-button-background"></div>
             </div>
             <div className="form-wrapper">
-                {/* Left Section: Image Display */}
                 <div className="image-upload-section">
                     <div className="upload-placeholder">
                         {courseData?.gambar_course ? (
@@ -144,7 +144,6 @@ const CourseOverviewPage = () => {
                         )}
                     </div>
                 </div>
-                {/* Right Section: Course Information */}
                 <div className="course-info">
                     <div className="detail-info">
                         <h3 className="course-title">
@@ -166,7 +165,7 @@ const CourseOverviewPage = () => {
                                 <button
                                     type="button"
                                     className="button-overview"
-                                    onClick={() => navigate(`/edit-course`)}
+                                    onClick={() => navigate(`/edit-course/${id}`)}
                                 >
                                     View Course
                                 </button>
@@ -234,12 +233,6 @@ const CourseOverviewPage = () => {
                         </>
                     )}
                 </div>
-                <MessageModal
-                    show={messageModal.show}
-                    type={messageModal.type}
-                    message={messageModal.message}
-                    onClose={handleCloseMessageModal}
-                />
             </div>
         </div>
     );

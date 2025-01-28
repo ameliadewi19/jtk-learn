@@ -31,6 +31,11 @@ module.exports = {
         type: Sequelize.ENUM('pilihan_ganda', 'jawaban_singkat', 'operasi_matematika'),
         allowNull: false,
       },
+      order: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: -1,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
