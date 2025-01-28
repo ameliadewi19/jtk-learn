@@ -12,10 +12,12 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
+  const [courseData, setCourseData] = useState({});
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
+  const incrementalId = useRef(0);
 
   const fetchMateriDanQuiz = async () => {
     if (!activeCourse) return;

@@ -13,6 +13,7 @@ import CourseOverviewPage from "./pages/CourseOverviewPage";
 import SummaryQuiz from "./pages/SummaryQuiz";
 import DetailSummaryQuiz from "./pages/DetailSummaryQuiz";
 import MyCoursesPage from "./pages/MyCoursesPage";
+import HistoryQuiz from './pages/HistoryQuizPage';
 
 function App() {
   return (
@@ -94,7 +95,7 @@ function App() {
                     path="/summary-quiz"
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
-                          <SummaryQuiz />
+                        <SummaryQuiz />
                       </ProtectedRoute>
                     }
                   />
@@ -102,7 +103,15 @@ function App() {
                     path="/summary-quiz/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
-                          <DetailSummaryQuiz />
+                        <DetailSummaryQuiz />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/history-quiz"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <HistoryQuiz />
                       </ProtectedRoute>
                     }
                   />
