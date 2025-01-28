@@ -15,7 +15,6 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
   const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
-  const [course, setCourse] = useState({ materi: [] });
   const [courseData, setCourseData] = useState({});
   const [selectedMateri, setSelectedMateri] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -139,18 +138,12 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
   useEffect(() => {
     if (activeMateri) {
       setSelectedMateri(activeMateri.new_id);
-    if (id) {
-      verifyEnrollment();
-      fetchCourseData();
-      fetchAllData();
-    }
-  }, [activeMateri]);
+  }}, [activeMateri]);
 
   useEffect(() => {
     if (id) {
       verifyEnrollment();
-      fetchCParticipant();
-      // fetchCourseData();
+      fetchAllData();
     }
   }, [id]);
 

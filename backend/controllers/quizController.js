@@ -1,7 +1,6 @@
-const { Quiz, Pertanyaan, Jawaban, Course, sequelize } = require('../models');
+const { Quiz, Pertanyaan, Jawaban, Course, sequelize, HistoryQuiz } = require('../models');
 const { getAllPertanyaan, createPertanyaan, updatePertanyaan } = require('./pertanyaanController');
 const { getJawabanByIdPertanyaan, createJawaban, updateJawaban } = require('./jawabanController');
-const { Quiz, Course, Pertanyaan, Jawaban, HistoryQuiz, Pelajar } = require('../models');
 
 // get all quiz
 const getAllQuiz = async (req, res) => {
@@ -320,16 +319,10 @@ const upsertHistoryQuiz = async (req, res) => {
 };
 
 
-module.exports = {
-    getAllQuiz,
-    getQuizByCourseId,
-    getQuizByPengajarId,
-    getQuizById,
-    createQuiz,
-    updateQuiz,
-    deleteQuiz
 module.exports = { 
     getAllQuiz, 
+    getQuizByCourseId,
+    getQuizByPengajarId,
     getQuizById, 
     createQuiz, 
     updateQuiz, 
