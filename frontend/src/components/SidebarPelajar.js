@@ -4,98 +4,72 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../services/api";
-import { UserContext } from '../components/UserContext';
+import { UserContext } from "../components/UserContext";
 
-const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseChange, updateCProgress}) => {
+const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCProgress }) => {
+  const [course, setCourse] = useState({ name: "", items: [] });
   const { id } = useParams();
   const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
-  const [course, setCourse] = useState({ materi: [] });
   const [courseData, setCourseData] = useState({});
-  const [selectedMateri, setSelectedMateri] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const incrementalId = useRef(0);
 
-  const fetchCourseData = async () => {
+  const fetchMateriDanQuiz = async () => {
+    if (!activeCourse) return;
+
     try {
-      const response = await api.get(`/courses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCourseData(response.data);
-    } catch (error) {
-      console.error('Error fetching course data:', error);
-    }
-  };
+      const [materiResponse, quizResponse] = await Promise.all([
+        api.get(`/materials/course/${activeCourse.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        api.get(`/quizzes/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-  useEffect(() => {
-    const fetchCParticipant = async () => {
-      try {
-        const response = await api.get(`/participant/pelajar/${user.userData.id_pelajar}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const mappedCourses = response.data.map((item) => ({
-          id: item.course.id_course,
-          title: item.course.nama_course,
-          progress: item.persentase_course,
-        }));
-        setParticipant(mappedCourses);
-
-        if (mappedCourses.length > 0) {
-          setActiveCourse(mappedCourses[0]);
-          onCourseChange(mappedCourses[0]);
-        }
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-      }
-    };
-    fetchCParticipant();
-  }, [token, user.userData.id_pelajar]);
-
-  useEffect(() => {
-    if (activeCourse) {
-      updateCProgress(activeCourse.id, activeCourse.progress);
-    }
-  }, [activeCourse, updateCProgress]);
-
-  const fetchMateriByCourse = async () => {
-    try {
-      const response = await api.get(`/materials/course/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const mappedMateri = response.data.map((materi) => ({
+      const mappedMateri = materiResponse.data?.map((materi) => ({
         id: materi.id_materi,
         name: materi.nama_materi,
-        type: materi.jenis_materi,
-      }));
+        mat_type: materi.jenis_materi,
+        type: "materi",
+        content: `http://localhost:5000/uploads/materials/${materi.konten_materi}`,
+      })) || [];
+
+      const mappedQuiz = quizResponse.data?.map((quiz) => ({
+        id_quiz: quiz.id_quiz,
+        name: quiz.nama_quiz,
+        duration: quiz.durasi,
+        type: "quiz",
+      })) || [];
+
+      const combinedData = [...mappedMateri, ...mappedQuiz]
+        .sort((a, b) => a.id - b.id_quiz)
+        .map((item, index) => ({ ...item, new_id: index + 1 }));
 
       setCourse((prevCourse) => ({
         ...prevCourse,
-        materi: mappedMateri,
+        items: combinedData,
       }));
+
+      if (combinedData.length > 0) {
+        setSelectedItem(combinedData[0].new_id);
+        onMateriChange(combinedData[0]);
+      }
     } catch (error) {
-      console.error('Error fetching materi:', error);
-      Swal.fire('Error', 'Failed to fetch materi. Please try again later.', 'error');
+      console.error("Error fetching materi and quiz:", error);
+      Swal.fire("Error", "Failed to fetch materi and quizzes. Please try again later.", "error");
     }
   };
 
   const verifyEnrollment = async () => {
     try {
-      console.log(user.userData.id_pelajar);
-      console.log(id);
       await api.get(`/participant/progress/${id}/${user.userData.id_pelajar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
       if (error.response?.status === 403) {
@@ -104,43 +78,52 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
     }
   };
 
-  const fetchQuizByCourse = async () => {
+  const fetchCParticipant = async () => {
     try {
-      const response = await api.get(`/quizzes/course/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await api.get(`/participant/pelajar/${user.userData.id_pelajar}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      return response.data.map(quiz => ({
-        id: incrementalId.current++,
-        id_item: quiz.id_quiz,
-        name: quiz.nama_quiz,
-        type: 'quiz',
+      const mappedCourses = response.data.map((item) => ({
+        id: item.course.id_course,
+        title: item.course.nama_course,
+        progress: item.persentase_course,
       }));
+
+      setParticipant(mappedCourses);
+
+      if (mappedCourses.length > 0) {
+        setActiveCourse(mappedCourses[0]);
+        onCourseChange(mappedCourses[0]);
+      }
     } catch (error) {
-      console.error('Error fetching quiz:', error);
-      Swal.fire('Error', 'Failed to fetch quiz. Please try again later.', 'error');
-      return [];
+      console.error("Error fetching courses:", error);
     }
   };
 
-  const fetchAllData = async () => {
-    const [materi, quiz] = await Promise.all([fetchMateriByCourse(), fetchQuizByCourse()]);
-    setCourse(prev => ({ ...prev, items: [...materi, ...quiz] }));
-  };
+  useEffect(() => {
+    if (activeCourse) {
+      updateCProgress(activeCourse.id, activeCourse.progress);
+      fetchMateriDanQuiz();
+    }
+  }, [activeCourse]);
+
+  useEffect(() => {
+    if (activeMateri) {
+      setSelectedItem(activeMateri.new_id);
+    }
+  }, [activeMateri]);
 
   useEffect(() => {
     if (id) {
       verifyEnrollment();
-      fetchCourseData();
-      fetchAllData();
+      fetchCParticipant();
     }
-  }, [activeMateri]);
+  }, [id]);
 
-  const handleMateriClick = (materi) => {
-    setSelectedMateri(materi.id);
-    onMateriChange(materi);
+  const handleMateriClick = (item) => {
+    setSelectedItem(item.new_id);
+    onMateriChange(item);
   };
 
   return (
@@ -155,10 +138,7 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
           aria-controls="sidebarMenu"
           aria-expanded={isOpen ? "true" : "false"}
           aria-label="Toggle navigation"
-          style={{
-            backgroundColor: "#f8f9fa",
-            border: "none",
-          }}
+          style={{ backgroundColor: "#f8f9fa", border: "none" }}
         >
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -186,23 +166,23 @@ const SidebarPelajar = ({onMateriChange, onLoadMateri, activeMateri, onCourseCha
                 </div>
                 <hr className="custom-hr" />
                 <ul className="learn-list mt-1">
-                  {course.materi.map((materi) => (
+                  {course.items.map((item) => (
                     <li
-                      key={materi.id}
+                      key={item.new_id}
                       className={`learn-list-item d-flex align-items-center ${
-                        selectedMateri === materi.id ? "active" : ""
+                        selectedItem === item.new_id ? "active" : ""
                       }`}
-                      onClick={() => handleMateriClick(materi)}
+                      onClick={() => handleMateriClick(item)}
                       style={{ cursor: "pointer" }}
                     >
                       <span className="icon ms-3 me-3">
-                        {materi.type === "materi" ? (
-                          <img src="/materi.png" alt="Materi" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                        ) : (
-                          <img src="/quiz.png" alt="Quiz" style={{ width: "20px", height: "20px", marginTop: "-5px" }} />
-                        )}
+                        <img
+                          src={item.type === "materi" ? "/materi.png" : "/quiz.png"}
+                          alt={item.type === "materi" ? "Materi" : "Quiz"}
+                          style={{ width: "20px", height: "20px", marginTop: "-5px" }}
+                        />
                       </span>
-                      {materi.name}
+                      {item.name}
                     </li>
                   ))}
                 </ul>

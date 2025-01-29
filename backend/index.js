@@ -9,6 +9,7 @@ const userRouter = require('./routes/userRoutes'); // Import the user routes
 const participantRouter = require('./routes/participantRoutes')
 const detailHistoryQuizRouter = require('./routes/detailHistoryQuizRoutes');
 const quizRouter = require('./routes/quizRoutes');
+const historyQuizRouter = require('./routes/historyQuizRoutes');
 const bodyParser = require('body-parser');
 const app = express();
 
@@ -22,11 +23,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Use the routers
 app.use('/auth', authRouter);
 app.use('/users', authenticate, userRouter);
-app.use('/courses', authenticate, authorizeRole(['pengajar', 'pelajar']), courseRouter);
-app.use('/materials', authenticate, authorizeRole(['pengajar', 'pelajar']), materialRouter);
-app.use('/participant', authenticate, authorizeRole(['pengajar', 'pelajar']), participantRouter);
+app.use('/courses', authenticate, authorizeRole(['pengajar','pelajar']), courseRouter);
+app.use('/materials', authenticate, authorizeRole(['pengajar','pelajar']), materialRouter);
+app.use('/participant', authenticate, authorizeRole(['pelajar']), participantRouter);
 app.use('/quizzes', authenticate, quizRouter);
 app.use('/detail-history-quiz', authenticate, detailHistoryQuizRouter);
+app.use('/history-quiz', authenticate, historyQuizRouter);
+
 // To check authentication
 app.get('/protected-route', authenticate, (req, res) => {
     res.send('You have access to this route');

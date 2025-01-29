@@ -1,4 +1,4 @@
-const { Quiz, Pertanyaan, Jawaban, Course, sequelize } = require('../models');
+const { Quiz, Pertanyaan, Jawaban, Course, sequelize, HistoryQuiz } = require('../models');
 const { getAllPertanyaan, createPertanyaan, updatePertanyaan } = require('./pertanyaanController');
 const { getJawabanByIdPertanyaan, createJawaban, updateJawaban } = require('./jawabanController');
 
@@ -108,19 +108,42 @@ const createQuiz = async (req, res) => {
     try {
         const { id_course, nama_quiz, deskripsi_quiz, durasi, pertanyaan, jawaban } = req.body;
 
-        const quiz = await Quiz.create({
-            id_course,
-            nama_quiz,
-            deskripsi_quiz,
-            durasi,
-        }, { transaction });
+        console.log(req.body);
 
-        await Promise.all(pertanyaan.map(async (q, i) => {
-            const question = await createPertanyaan(quiz.id_quiz, q.nama_pertanyaan, q.konten_pertanyaan, q.jenis_pertanyaan, transaction);
-            await Promise.all(jawaban[i].map(async (a) => {
-                await createJawaban(question.id_pertanyaan, a.nama_jawaban, a.konten_jawaban, a.status_jawaban, transaction);
-            }));
-        }));
+        const quiz = await Quiz.create(
+            {
+                id_course,
+                nama_quiz,
+                deskripsi_quiz,
+                durasi,
+            },
+            { transaction }
+        );
+
+        // Ambil langsung nilai `order` dari `req.body`
+        await Promise.all(
+            pertanyaan.map(async (q, index) => {
+                const question = await createPertanyaan(
+                    quiz.id_quiz,
+                    q.nama_pertanyaan,
+                    q.konten_pertanyaan,
+                    q.jenis_pertanyaan,
+                    q.order, // Gunakan nilai order dari req.body
+                    transaction
+                );
+                await Promise.all(
+                    jawaban[index].map(async (a) => {
+                        await createJawaban(
+                            question.id_pertanyaan,
+                            a.nama_jawaban,
+                            a.konten_jawaban,
+                            a.status_jawaban,
+                            transaction
+                        );
+                    })
+                );
+            })
+        );
 
         await transaction.commit();
         res.status(201).json(quiz);
@@ -130,6 +153,7 @@ const createQuiz = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // update quiz, pertanyaan, and jawaban
 const updateQuiz = async (req, res) => {
@@ -199,12 +223,84 @@ const deleteQuiz = async (req, res) => {
     }
 };
 
-module.exports = {
-    getAllQuiz,
+// Get history quiz by ID
+const getHistoryQuizByID = async (req, res) => {
+  try {
+    const { id_pelajar, id_quiz } = req.params;
+    const history = await HistoryQuiz.findAll({
+      where: {id_pelajar, id_quiz},
+      include: [
+        {
+          model: Quiz,
+          as: 'quiz',
+        },
+        {
+          model: Pelajar,
+          as: 'pelajar'
+        }
+      ],
+    });
+
+    if (!history || history.length === 0) {
+      return res.status(404).json({ message: 'No answers found for the specified question ID.' });
+    }
+
+    res.status(200).json(history);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const upsertHistoryQuiz = async (req, res) => {
+  try {
+    const { id_pelajar, id_quiz } = req.params;
+    const { waktu_mulai, waktu_selesai, nilai } = req.body;
+
+    // Debug log untuk payload
+    console.log("Received payload:", req.body);
+    
+    let historyQuiz = await HistoryQuiz.findOne({
+      where: { id_pelajar, id_quiz },
+    });
+
+    if (historyQuiz) {
+      // Jika sudah ada, lakukan update
+      await historyQuiz.update({ waktu_mulai, waktu_selesai, nilai });
+
+      return res.status(200).json({
+        message: "HistoryQuiz updated successfully.",
+        data: historyQuiz,
+      });
+    } else {
+      // Jika tidak ada, buat resource baru
+      historyQuiz = await HistoryQuiz.create({
+        id_quiz,
+        id_pelajar,
+        waktu_mulai,
+        waktu_selesai,
+        nilai,
+      });
+
+      return res.status(201).json({
+        message: "HistoryQuiz created successfully.",
+        data: historyQuiz,
+      });
+    }
+  } catch (error) {
+    console.error("Error in upsertHistoryQuiz:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+module.exports = { 
+    getAllQuiz, 
     getQuizByCourseId,
     getQuizByPengajarId,
-    getQuizById,
-    createQuiz,
-    updateQuiz,
-    deleteQuiz
+    getQuizById, 
+    createQuiz, 
+    updateQuiz, 
+    deleteQuiz,
+    getHistoryQuizByID,
+    upsertHistoryQuiz 
 };

@@ -58,8 +58,8 @@ const MyCoursesPage = () => {
         setActiveTab(tab);
     };
 
-    const handleCourseClick = () => {
-        navigate(`/learn-course`);
+    const handleCourseClick = (id) => {
+        navigate(`/course/${id}`);
     };
 
     return(
@@ -110,27 +110,26 @@ const MyCoursesPage = () => {
                                     inProgressCourses.map((course) => (
                                         <div
                                             key={course.id}
-                                            className="col-md-3 mb-3 ms-5"
+                                            className="col-12 col-sm-6 col-lg-3"
                                             onClick={() => handleCourseClick(course.id)}
                                         >
-                                            <div className="card">
+                                            <div className="card custom-card">
                                                 <img
                                                     src={course.image}
-                                                    className="card-img-top"
+                                                    className="custom-card-img-top"
                                                     alt={course.title}
                                                 />
                                                 <div className="card-body-mycourse">
                                                     <h6 className="card-title">{course.title}</h6>
                                                     <p className="card-text">{course.author}</p>
-                                                    <div className='progress-container'>
-                                                        <div className="progress">
+                                                    <div className='progress-wrapper2'>
+                                                        <div className="progress-bar-container">
                                                             <div
-                                                                className="progress-bar"
+                                                                className="progress-bar-fill"
                                                                 role="progressbar"
                                                                 style={{
                                                                     width: `${course.progress}%`,
-                                                                    // backgroundColor: course.progress === 0 ? '#6488EA' : '#EA6488',
-                                                                }}                                                                                                                               
+                                                                }}                    
                                                                 aria-valuenow={course.progress}
                                                                 aria-valuemin="0"
                                                                 aria-valuemax="100"
@@ -162,26 +161,25 @@ const MyCoursesPage = () => {
                                     completedCourses.map((course) => (
                                         <div
                                             key={course.id}
-                                            className="col-md-3 mb-3 ms-5"
+                                            className="col-12 col-sm-6 col-lg-3"
                                             onClick={() => handleCourseClick(course.id)}
                                         >
-                                            <div className="card">
+                                            <div className="card custom-card">
                                                 <img
                                                     src={course.image}
-                                                    className="card-img-top"
+                                                    className="custom card-img-top"
                                                     alt={course.title}
                                                 />
                                                 <div className="card-body-mycourse">
                                                     <h6 className="card-title">{course.title}</h6>
                                                     <p className="card-text">{course.author}</p>
-                                                    <div className='progress-container'>
-                                                        <div className="progress">
+                                                    <div className='progress-wrapper2'>
+                                                        <div className="progress-bar-container">
                                                             <div
-                                                                className="progress-bar"
+                                                                className="progress-bar-fill"
                                                                 role="progressbar"
                                                                 style={{
                                                                     width: `${course.progress}%`,
-                                                                    backgroundColor: course.progress === 0 ? '#6488EA' : '#EA6488',
                                                                 }}
                                                                 aria-valuenow={course.progress}
                                                                 aria-valuemin="0"

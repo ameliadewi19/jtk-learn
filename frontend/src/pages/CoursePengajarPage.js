@@ -67,17 +67,21 @@ const CoursePengajarPage = () => {
                 ? await api.put(`/courses/${id}`, formData, { headers: { Authorization: `Bearer ${token}` } })
                 : await api.post('/courses', formData, { headers: { Authorization: `Bearer ${token}` } });
 
-            Swal.fire({
-                title: 'Success!',
-                text: isEditMode ? 'Course berhasil diperbarui!' : 'Course berhasil ditambahkan!',
-                icon: 'success',
-                confirmButtonText: 'Close',
-                customClass: {
-                    confirmButton: 'custom-confirm-button',
-                },
-            }).then(() => {
-                isEditMode ? navigate(`/course/${id}`, { replace: true }) : navigate('/dashboard-pengajar', { replace: true });
-            });
+                Swal.fire({
+                    title: 'Success!',
+                    text: isEditMode ? 'Course berhasil diperbarui!' : 'Course berhasil ditambahkan!',
+                    icon: 'success',
+                    confirmButtonText: 'Close',
+                    customClass: {
+                        confirmButton: 'custom-confirm-button',
+                    },
+                }).then((result) => {
+                    if (result.isConfirmed || result.isDismissed) {
+                        isEditMode 
+                            ? navigate(`/course/${id}`, { replace: true }) 
+                            : navigate('/dashboard-pengajar', { replace: true });
+                    }
+                });                
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Terjadi kesalahan';
             Swal.fire({

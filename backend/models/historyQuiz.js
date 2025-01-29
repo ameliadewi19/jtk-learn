@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
             id_quiz: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+                primaryKey: true,
                 references: {
                     model: 'quiz',
                     key: 'id_quiz',
@@ -34,6 +35,7 @@ module.exports = (sequelize, DataTypes) => {
             id_pelajar: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+                primaryKey: true,
                 references: {
                     model: 'pelajar',
                     key: 'id_pelajar',

@@ -69,9 +69,9 @@ const DashboardPengajar = () => {
         <div className="row row-custom-gap">
           {courseList.length > 0 ? (
             courseList.map((course) => (
-              <div 
-              key={course.id} 
-              className="col-12 col-sm-6 col-lg-3">
+              <div
+                key={course.id}
+                className="col-12 col-sm-6 col-lg-3">
                 <div
                   className="card custom-card"
                   onClick={() => navigate(`/course/${course.id}`)}
@@ -89,7 +89,9 @@ const DashboardPengajar = () => {
               </div>
             ))
           ) : (
-            <p className="text-center">No courses available at the moment.</p>
+            <p style={{ fontSize: '20px', textAlign: 'center' }}>
+              No course has been created yet
+            </p>
           )}
         </div>
       </div>

@@ -53,11 +53,12 @@
 }
 
 .custom-card-body .custom-card-text {
-    margin-bottom: 0;
+    margin-bottom: 10px; 
     line-height: 1.2;
     font-size: 14px;
     color: #6c757d;
 }
+
 
 .custom-card-img-top {
     object-fit: cover;

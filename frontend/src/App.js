@@ -7,13 +7,13 @@ import DashboardPengajar from "./pages/DashboardPengajarPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MempelajariCoursePage from "./pages/MempelajariCoursePage";
-import SidebarPelajar from './components/SidebarPelajar';
 import SidebarPengajar from "./components/SidebarPengajar";
 import CoursePengajar from "./pages/CoursePengajarPage";
 import CourseOverviewPage from "./pages/CourseOverviewPage";
 import SummaryQuiz from "./pages/SummaryQuiz";
 import DetailSummaryQuiz from "./pages/DetailSummaryQuiz";
 import MyCoursesPage from "./pages/MyCoursesPage";
+import HistoryQuiz from './pages/HistoryQuizPage';
 
 function App() {
   return (
@@ -39,7 +39,7 @@ function App() {
                     path="/learn-course/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pelajar']}>
-                        <SidebarPelajar />
+                        <MempelajariCoursePage />
                       </ProtectedRoute>
                     }
                   />
@@ -84,10 +84,18 @@ function App() {
                     }
                   />
                   <Route
+                    path="/my-courses"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <MyCoursesPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/summary-quiz"
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
-                          <SummaryQuiz />
+                        <SummaryQuiz />
                       </ProtectedRoute>
                     }
                   />
@@ -95,7 +103,15 @@ function App() {
                     path="/summary-quiz/:id"
                     element={
                       <ProtectedRoute allowedRoles={['pengajar']}>
-                          <DetailSummaryQuiz />
+                        <DetailSummaryQuiz />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/history-quiz"
+                    element={
+                      <ProtectedRoute allowedRoles={['pelajar']}>
+                        <HistoryQuiz />
                       </ProtectedRoute>
                     }
                   />
