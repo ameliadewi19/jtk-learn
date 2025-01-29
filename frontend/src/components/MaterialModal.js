@@ -163,8 +163,8 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
             <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
           <div className="modal-body">
-            <form onSubmit={handleSubmit}>
-                           <div className="grid-container-material">
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }}>
+          <div className="grid-container-material">
                 <label className="form-label mb-0">Name</label>
                 <input
                   type="text"
@@ -208,43 +208,43 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
                 }
               `}</style>
               <div className="mb-4">
-  <div
-    className="upload-container"
-    onClick={() => document.getElementById('upload-file').click()}
-  >
-    {formValues.konten_materi ? (
-      <div className="uploaded-file d-flex align-items-center" style={{ backgroundColor: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
-        <img
-          src="/document.png"
-          alt="File"
-          style={{
-            width: '40px',
-            height: '40px',
-            marginRight: '10px',
-          }}
-        />
-        <span style={{ flex: 1 }}>{formValues.konten_materi.name || formValues.konten_materi}</span>
-        <button
-          type="button"
-          onClick={handleRemoveFile}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-          }}
-        >
-          <img
-            src="/trash-bin.png"
-            alt="Delete"
-            style={{
-              width: '25px',
-              height: '25px',
-            }}
-          />
-        </button>
-      </div>
-    ) : (
+                <div
+                  className="upload-container"
+                  onClick={() => document.getElementById('upload-file').click()}
+                >
+                  {formValues.konten_materi ? (
+                    <div className="uploaded-file d-flex align-items-center" style={{ backgroundColor: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                      <img
+                        src="/document.png"
+                        alt="File"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          marginRight: '10px',
+                        }}
+                      />
+                      <span style={{ flex: 1 }}>{formValues.konten_materi.name || formValues.konten_materi}</span>
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <img
+                          src="/trash-bin.png"
+                          alt="Delete"
+                          style={{
+                            width: '25px',
+                            height: '25px',
+                          }}
+                        />
+                      </button>
+                    </div>
+                  ) : (
                     <div className="upload-placeholder">
                       <div className="upload-container">
                         <img
@@ -261,7 +261,6 @@ const MaterialModal = ({ show, onClose, onSubmit, initialData }) => {
                           Drag and drop file here or{' '}
                           <span
                             className="text-primary text-decoration-underline cursor-pointer"
-                            onClick={() => document.getElementById('upload-file').click()}
                           >
                             Choose file
                           </span>

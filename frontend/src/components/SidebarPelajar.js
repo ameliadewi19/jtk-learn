@@ -17,7 +17,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
-  const incrementalId = useRef(0);
+  // const incrementalId = useRef(0);
 
   const fetchMateriDanQuiz = async () => {
     if (!activeCourse) return;
@@ -27,7 +27,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
         api.get(`/materials/course/${activeCourse.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        api.get(`/quizzes//course/${activeCourse.id}`, {
+        api.get(`/quizzes/course/${activeCourse.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -44,6 +44,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
         id_quiz: quiz.id_quiz,
         name: quiz.nama_quiz,
         duration: quiz.durasi,
+        desc: quiz.deskripsi_quiz,
         type: "quiz",
       })) || [];
 
@@ -126,7 +127,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
     }
   }, [id]);
 
-  const handleMateriClick = (item) => {
+  const handleClick = (item) => {
     setSelectedItem(item.new_id);
     onMateriChange(item);
   };
@@ -177,7 +178,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
                       className={`learn-list-item d-flex align-items-center ${
                         selectedItem === item.new_id ? "active" : ""
                       }`}
-                      onClick={() => handleMateriClick(item)}
+                      onClick={() => handleClick(item)}
                       style={{ cursor: "pointer" }}
                     >
                       <span className="icon ms-3 me-3">

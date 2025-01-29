@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection'); // Pastikan path sudah sesuai
-const historyQuiz = require('./historyQuiz');
 
 // Import semua model
 const User = require('./user')(sequelize, DataTypes);
@@ -14,6 +13,7 @@ const Pertanyaan = require('./pertanyaan')(sequelize, DataTypes);
 const Jawaban = require('./jawaban')(sequelize, DataTypes);
 const HistoryQuiz = require('./historyQuiz')(sequelize, DataTypes);
 const HistoryMateri = require('./historyMateri')(sequelize, DataTypes);
+const DetailHistoryQuiz = require('./detailHistoryQuiz')(sequelize, DataTypes);
 
 // Pastikan asosiasi dijalankan dengan benar
 const models = { 
@@ -22,7 +22,7 @@ const models = {
   Materi, Quiz, 
   CourseParticipant, 
   Pertanyaan, Jawaban,
-  HistoryQuiz, HistoryMateri
+  HistoryQuiz, HistoryMateri, DetailHistoryQuiz
 };
 
 // Panggil method `associate` pada setiap model jika ada

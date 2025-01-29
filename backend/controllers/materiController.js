@@ -1,4 +1,6 @@
 const { Materi, Course, HistoryMateri } = require('../models');
+const fs = require('fs');
+const path = require('path');
 
 const getAllMateri = async (req, res) => {
   try {
@@ -42,18 +44,27 @@ const updateMateri = async (req, res) => {
   try {
     const { nama_materi, jenis_materi, id_materi } = req.body;
 
-    console.log(req.body);
-
     const materi = await Materi.findOne({ where: { id_materi: id_materi } });
 
     if (!materi) {
       return res.status(404).json({ message: 'Materi not found.' });
     }
 
-    // Periksa apakah ada file baru yang diunggah
-    const konten_materi = req.file ? req.file.filename : materi.konten_materi;
+    // Variabel untuk menyimpan nama file baru
+    let konten_materi = materi.konten_materi;
 
-    // Update materi
+    if (req.file) {
+      // Hapus file lama jika ada
+      const oldFilePath = path.join(__dirname, '../../frontend/public/uploads/materials', `${materi.konten_materi}`);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath); // Hapus file lama
+      }
+
+      // Ambil nama file baru yang diunggah
+      konten_materi = req.file.filename;
+    }
+
+    // Update data materi di database
     await materi.update({ nama_materi, jenis_materi, konten_materi });
 
     res.status(200).json({ message: 'Materi updated successfully.', materi });
@@ -72,6 +83,14 @@ const deleteMateri = async (req, res) => {
 
     if (!materi) {
       return res.status(404).json({ message: 'Materi not found.' });
+    }
+
+    // Construct the file path
+    const filePath = path.join(__dirname, '../../frontend/public/uploads/materials', `${materi.konten_materi}`);
+
+    // Check if the file exists and delete it
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
     }
 
     await materi.destroy();

@@ -7,8 +7,6 @@ const {
     createQuiz, 
     updateQuiz, 
     deleteQuiz,
-    getHistoryQuizByID,
-    upsertHistoryQuiz
 } = require('../controllers/quizController');
 const router = express.Router();
 const { authorizeRole } = require('../middleware/authorizeRole');
@@ -21,7 +19,5 @@ router.get('/:id', authorizeRole(['pengajar', 'pelajar']), getQuizById); // Get 
 router.post('/', authorizeRole(['pengajar']), createQuiz); // Create a new quiz
 router.put('/:id', authorizeRole(['pengajar']), updateQuiz); // Update quiz by ID
 router.delete('/:id', authorizeRole(['pengajar']), deleteQuiz); // Delete quiz by ID
-router.get('/:id_pelajar/:id_quiz', authorizeRole(['pengajar', 'pelajar']), getHistoryQuizByID);
-router.put('/:id_pelajar/:id_quiz', authorizeRole(['pengajar', 'pelajar']), upsertHistoryQuiz); //update, create if not exist
 
 module.exports = router;

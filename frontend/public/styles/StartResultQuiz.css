@@ -1,0 +1,50 @@
+.quiz-guide-box {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    min-height: 100vh;
+    position: relative;
+}
+
+.quiz-title {
+    position: absolute;
+    top: 0;
+    left: 16px;
+    margin-top: 50px;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.custom-quiz-guide {
+    width: 700px;
+    padding: 30px;
+    background-color: #d6d6d6;
+    border: 2px solid black;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.custom-quiz-guide h3 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.custom-quiz-guide p {
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.passed-quiz{
+    color: rgb(115, 215, 115);
+    font-weight: bold;
+}
+
+.notpass-quiz{
+    color: red;
+    font-weight: bold;
+}

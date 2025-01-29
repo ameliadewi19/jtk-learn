@@ -15,12 +15,13 @@ const getAllPertanyaan = async (id_quiz) => {
 };
 
 // create new pertanyaan for a quiz
-const createPertanyaan = async (id_quiz, nama_pertanyaan, konten_pertanyaan, jenis_pertanyaan, transaction) => {
+const createPertanyaan = async (id_quiz, nama_pertanyaan, konten_pertanyaan, jenis_pertanyaan, order, transaction) => {
     return await Pertanyaan.create({
         id_quiz,
         nama_pertanyaan,
         konten_pertanyaan,
-        jenis_pertanyaan
+        jenis_pertanyaan,
+        order
     }, { transaction });
 };
 

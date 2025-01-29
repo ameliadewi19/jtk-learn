@@ -54,11 +54,10 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
       });
       const questionsData = soalResponse.data;
   
-      // Peta data pertanyaan dan jawaban ke format yang diinginkan
       const mappedQuestions = questionsData.pertanyaan.map((pertanyaan, index) => ({
         ...pertanyaan,
-        id_pertanyaan: index + 1, // Buat id unik untuk setiap pertanyaan
-        jawaban: questionsData.jawaban[index] || [], // Ambil jawaban sesuai urutan
+        id_pertanyaan: index + 1,
+        jawaban: questionsData.jawaban[index] || [],
       }));
   
       setQuestions(mappedQuestions);
@@ -84,6 +83,7 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
   
   const calculateScore = (question, userAnswer) => {
     let score = 0;
+    let correct = false;
   
     switch (question.jenis_pertanyaan) {
       case "pilihan_ganda":
@@ -91,12 +91,10 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
           (jawaban) => jawaban.status_jawaban === "benar"
         );
 
-        console.log('apa coba correctOptionnya:', correctOption)
-
         if (correctOption?.nama_jawaban === userAnswer) {
           score = 25;
+          correct = true;
         }
-        console.log('score saat ini:', score)
         break;
   
       case "jawaban_singkat":
@@ -108,6 +106,7 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
             userAnswer.toLowerCase()
           ) {
             score = 40;
+            correct = true;
           }
           break;
   
@@ -119,13 +118,14 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
             parseFloat(correctMathAnswer?.konten_jawaban) === parseFloat(userAnswer)
           ) {
             score = 35;
+            correct = true;
           }
           break;
   
       default:
         break;
     }
-    return score;
+    return { score, correct };
   };
   
   const handleSubmit = async (e) => {
@@ -148,28 +148,24 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
       setLoading(true);
       const hasil = [];
       let totalScore = 0;
-  
-      // Waktu mulai dan selesai kuis
+      let correctCount = 0;
       const waktuMulai = new Date(startTime).toISOString(); 
       const waktuSelesai = new Date().toISOString();
   
       questions.forEach((question) => {
-        const userAnswer = answers[question.id_pertanyaan]; // Ambil jawaban user untuk pertanyaan ini
-        console.log('isi userAnswer:', userAnswer);
-      
-        const questionScore = calculateScore(question, userAnswer); // Hitung skor untuk pertanyaan ini
-      
-        totalScore += questionScore; // Tambahkan skor ke total skor
-      
+        const userAnswer = answers[question.id_pertanyaan];      
+        const {score, correct} = calculateScore(question, userAnswer);
+        totalScore += score;
+        if (correct) correctCount++;
         hasil.push({
           id_pertanyaan: question.id_pertanyaan, // ID pertanyaan
           jawaban_user: userAnswer, // Jawaban pengguna
-          nilai: questionScore, // Skor untuk pertanyaan ini
-          benar: questionScore > 0, // Benar jika skornya lebih dari 0
+          nilai: score, // Skor untuk pertanyaan ini
+          benar: correct, // Benar jika skornya lebih dari 0
         });
       });
+      onSubmitQuiz({ hasil, nilai: totalScore, benar: correctCount });
   
-      // Simpan hasil kuis (PUT atau POST)
       const historyPayload = {
         id_quiz: quizData.id_quiz,
         id_pelajar: user.userData.id_pelajar,
@@ -177,11 +173,9 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
         waktu_selesai: waktuSelesai,
         nilai: totalScore,
       };
-  
-      console.log("Payload being sent:", historyPayload);
 
       await api.put(
-        `/quizzes/${user.userData.id_pelajar}/${quizData.id_quiz}`,
+        `/history-quiz/${user.userData.id_pelajar}/${quizData.id_quiz}`,
         historyPayload,
         {
           headers: {
@@ -189,16 +183,6 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
           },
         }
       );
-  
-      // Tampilkan skor kepada pengguna
-      Swal.fire({
-        title: "Quiz Selesai!",
-        text: `Skor Anda: ${totalScore}`,
-        icon: "success",
-      });
-  
-      // Kirim hasil ke parent jika diperlukan
-      onSubmitQuiz(hasil);
     } catch (error) {
       console.error("Error submitting quiz:", error);
       Swal.fire({

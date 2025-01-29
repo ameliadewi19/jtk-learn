@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import SidebarPelajar from "../components/SidebarPelajar";
 import MelihatMateri from "../components/MelihatMateri";
 import MengerjakanQuiz from "../components/MengerjakanQuiz";
+import StartQuiz from "../components/StartQuiz";
+import QuizResult from "../components/QuizResult";
 import api from "../services/api";
 import Swal from "sweetalert2";
 import { UserContext } from "../components/UserContext";
@@ -11,7 +13,11 @@ const MempelajariCoursePage = () => {
   const [courseMateri, setCourseMateri] = useState([]);
   const [activeMateri, setActiveMateri] = useState(null);
   const [activeCourse, setActiveCourse] = useState(null);
+  const [isStartQuizMode, setIsStartQuizMode] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [totalScore, setTotalScore] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
   const [progressMap, setProgressMap] = useState({});
   const { user } = useContext(UserContext);
   const token = localStorage.getItem("token");
@@ -77,10 +83,10 @@ const MempelajariCoursePage = () => {
     handleProgressUpdate();
   };
 
-  const handleQuizSubmit = (answers) => {
-    console.log("Quiz submitted:", answers);
-
-    Swal.fire("Success", "Your answers have been submitted!", "success");
+  const handleQuizSubmit = ({hasil, nilai, benar}) => {
+    setTotalScore(nilai);
+    setCorrectAnswers(benar);
+    setQuizCompleted(true);
     setIsQuizMode(false);
   };
 
@@ -99,9 +105,10 @@ const MempelajariCoursePage = () => {
 
   useEffect(() => {
     if (activeMateri && activeMateri.type === "quiz") {
-      setIsQuizMode(true);
+      setIsStartQuizMode(true);
+      setIsQuizMode(false);
     }
-  }, [activeMateri]);
+  }, [activeMateri]);  
 
   return (
     <div
@@ -122,22 +129,32 @@ const MempelajariCoursePage = () => {
         />
       </div>
       <div className="flex-grow-1 d-flex align-items-center justify-content-center p-4 border-main-content">
-        {activeMateri ? (
-          isQuizMode ? (
-            <MengerjakanQuiz
-              quizData={activeMateri} // Kirim data quiz aktif
-              onSubmitQuiz={handleQuizSubmit} // Callback untuk submit quiz
-            />
+        {quizCompleted?(
+          <QuizResult quizData={activeMateri} totalScore={totalScore} correctAnswers={correctAnswers} />
+        ): activeMateri? (
+            isQuizMode ? (
+              <MengerjakanQuiz
+                quizData={activeMateri} // Data quiz aktif
+                onSubmitQuiz={handleQuizSubmit} // Callback submit quiz
+              />
+            ) : isStartQuizMode ? (
+              <StartQuiz
+                quizData={activeMateri} // Data quiz untuk StartQuiz
+                onStartQuiz={() => {
+                  setIsStartQuizMode(false); // Matikan mode StartQuiz
+                  setIsQuizMode(true); // Aktifkan mode MengerjakanQuiz
+                }}
+              />
+            ) : (
+              <MelihatMateri
+                activeMateri={activeMateri} // Data materi aktif
+                handleMateriNext={handleMateriNext} // Callback untuk materi berikutnya
+              />
+            )
           ) : (
-            <MelihatMateri
-              activeMateri={activeMateri} // Kirim data materi aktif
-              handleMateriNext={handleMateriNext} // Callback untuk navigasi ke materi berikutnya
-            />
-          )
-        ) : (
-          <div className="text-center">
-            <h5>There are no materials or quizzes for this course yet</h5>
-          </div>
+            <div className="text-center">
+              <h5>There are no materials or quizzes for this course yet</h5>
+            </div>
         )}
       </div>
     </div>

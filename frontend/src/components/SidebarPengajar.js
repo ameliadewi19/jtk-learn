@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -7,7 +7,6 @@ import Swal from "sweetalert2";
 import api from "../services/api";
 import QuizModal from "./QuizModal";
 import MaterialModal from './MaterialModal';
-
 
 const SidebarPengajar = () => {
   const { id } = useParams(); // Get the id from the URL parameters
@@ -53,7 +52,7 @@ const SidebarPengajar = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       return response.data.map((materi) => ({
         id: incrementalId.current++,
         id_item: materi.id_materi,
@@ -66,7 +65,7 @@ const SidebarPengajar = () => {
       return []; // Return an empty array on error to prevent issues in Promise.all
     }
   };
-  
+
   const fetchQuizData = async (idQuiz) => {
     try {
       const response = await api.get(`/quizzes/${idQuiz}`, {
@@ -125,15 +124,6 @@ const SidebarPengajar = () => {
 
   useEffect(() => {
     if (id) {
-      fetchCourse();
-      fetchAllData();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (id) {
-      fetchMateriByCourse();
-      fetchQuizByCourse();
       fetchCourse();
       fetchAllData();
     }
@@ -311,7 +301,18 @@ const SidebarPengajar = () => {
                 return item;
               }),
             }));
-            Swal.fire('Success', 'Material has been updated successfully.', 'success');
+            Swal.fire({
+              title: 'Success',
+              text: 'Material has been updated successfully.',
+              icon: 'success',
+            }).then((result) => {
+              if (result.isConfirmed || result.isDismissed) {
+                setOpenDropdown(null);
+                fetchMateriByCourse();
+                fetchAllData();
+                setShowMaterialModal(false); // Move this inside the then block
+              }
+            });
           })
           .catch((error) => {
             console.error('Error updating material:', error);
@@ -326,11 +327,27 @@ const SidebarPengajar = () => {
           .then((response) => {
             setCourse((prevCourse) => ({
               ...prevCourse,
-              items: [...prevCourse.items, { id: incrementalId.current++, name: data.nama_materi, type: 'materi' }],
+              items: [
+                ...prevCourse.items,
+                {
+                  id: incrementalId.current++,
+                  id_item: response.data.id_materi,
+                  name: data.nama_materi,
+                  type: 'materi',
+                },
+              ],
             }));
-            Swal.fire('Success', 'Materi berhasil ditambahkan!', 'success');
-          })
-          .catch((error) => {
+            Swal.fire({
+              title: 'Success',
+              text: 'Material has been created successfully.',
+              icon: 'success',
+            }).then((result) => {
+              if (result.isConfirmed || result.isDismissed) {
+                setShowMaterialModal(false); // Move this inside the then block
+                fetchMateriByCourse(); // Refresh daftar materi setelah alert ditutup
+              }
+            });
+          }).catch((error) => {
             console.error('Error creating material:', error);
             Swal.fire('Error', 'Failed to create material. Please try again later.', 'error');
           });
@@ -339,8 +356,6 @@ const SidebarPengajar = () => {
       console.error('Error submitting material:', error);
       Swal.fire('Error', 'Failed to submit material. Please try again later.', 'error');
     }
-    setShowMaterialModal(false);
-    fetchMateriByCourse(); // Refetch material data after submission
   };
 
   const toggleSidebar = () => {

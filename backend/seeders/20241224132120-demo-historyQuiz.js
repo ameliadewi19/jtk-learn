@@ -22,13 +22,31 @@ module.exports = {
 
     await queryInterface.bulkInsert('historyQuiz', [
       {
-        id_pelajar: idPelajar,
-        id_quiz: idQuiz,
+        id_pelajar: 1,
+        id_quiz: 1,
         waktu_mulai: new Date(),
         waktu_selesai: new Date(),
         nilai: 100,
         createdAt: new Date(),
         updatedAt: new Date(),
+      },
+      {
+        id_pelajar: 1,
+        id_quiz: 1,
+        waktu_mulai: new Date(),
+        waktu_selesai: new Date(),
+        nilai: 80,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id_pelajar: 1,
+        id_quiz: 2,
+        waktu_mulai: new Date(),
+        waktu_selesai: new Date(),
+        nilai: 90,
+        createdAt: new Date(),
+        updatedAt: new Date
       }
     ]);
   },
