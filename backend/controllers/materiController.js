@@ -44,6 +44,7 @@ const updateMateri = async (req, res) => {
   try {
     const { nama_materi, jenis_materi, id_materi } = req.body;
 
+    // Cari materi berdasarkan ID
     const materi = await Materi.findOne({ where: { id_materi: id_materi } });
 
     if (!materi) {
@@ -73,6 +74,7 @@ const updateMateri = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 const deleteMateri = async (req, res) => {

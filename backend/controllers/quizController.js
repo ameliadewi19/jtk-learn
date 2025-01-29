@@ -108,19 +108,42 @@ const createQuiz = async (req, res) => {
     try {
         const { id_course, nama_quiz, deskripsi_quiz, durasi, pertanyaan, jawaban } = req.body;
 
-        const quiz = await Quiz.create({
-            id_course,
-            nama_quiz,
-            deskripsi_quiz,
-            durasi,
-        }, { transaction });
+        console.log(req.body);
 
-        await Promise.all(pertanyaan.map(async (q, i) => {
-            const question = await createPertanyaan(quiz.id_quiz, q.nama_pertanyaan, q.konten_pertanyaan, q.jenis_pertanyaan, transaction);
-            await Promise.all(jawaban[i].map(async (a) => {
-                await createJawaban(question.id_pertanyaan, a.nama_jawaban, a.konten_jawaban, a.status_jawaban, transaction);
-            }));
-        }));
+        const quiz = await Quiz.create(
+            {
+                id_course,
+                nama_quiz,
+                deskripsi_quiz,
+                durasi,
+            },
+            { transaction }
+        );
+
+        // Ambil langsung nilai `order` dari `req.body`
+        await Promise.all(
+            pertanyaan.map(async (q, index) => {
+                const question = await createPertanyaan(
+                    quiz.id_quiz,
+                    q.nama_pertanyaan,
+                    q.konten_pertanyaan,
+                    q.jenis_pertanyaan,
+                    q.order, // Gunakan nilai order dari req.body
+                    transaction
+                );
+                await Promise.all(
+                    jawaban[index].map(async (a) => {
+                        await createJawaban(
+                            question.id_pertanyaan,
+                            a.nama_jawaban,
+                            a.konten_jawaban,
+                            a.status_jawaban,
+                            transaction
+                        );
+                    })
+                );
+            })
+        );
 
         await transaction.commit();
         res.status(201).json(quiz);
@@ -130,6 +153,7 @@ const createQuiz = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // update quiz, pertanyaan, and jawaban
 const updateQuiz = async (req, res) => {
