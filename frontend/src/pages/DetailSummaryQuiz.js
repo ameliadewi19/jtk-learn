@@ -37,19 +37,14 @@ const DetailSummaryQuiz = () => {
     }, []);
 
     useEffect(() => {
-        sortResultsList();
-    }, [sortOrder, resultsList]);
-
-    const sortResultsList = () => {
-        const sortedList = [...resultsList].sort((a, b) => {
-            if (sortOrder === 'asc') {
-                return a.student_name.localeCompare(b.student_name);
-            } else {
-                return b.student_name.localeCompare(a.student_name);
-            }
-        });
-        setResultsList(sortedList);
-    };
+        fetchResultsList();
+    }, []); // Hanya panggil sekali saat komponen mount
+    
+    const sortedResults = [...resultsList].sort((a, b) =>
+        sortOrder === 'asc'
+            ? a.student_name.localeCompare(b.student_name)
+            : b.student_name.localeCompare(a.student_name)
+    );
 
     const handleSortChange = (e) => {
         setSortOrder(e.target.value);
@@ -71,36 +66,6 @@ const DetailSummaryQuiz = () => {
         if (currentPage < Math.ceil(resultsList.length / resultsPerPage)) {
             setCurrentPage(currentPage + 1);
         }
-    };
-
-    const renderPagination = () => {
-        const totalPages = Math.ceil(resultsList.length / resultsPerPage);
-        const pageNumbers = [];
-
-        if (totalPages <= 5) {
-            for (let i = 1; i <= totalPages; i++) {
-                pageNumbers.push(i);
-            }
-        } else {
-            if (currentPage <= 3) {
-                pageNumbers.push(1, 2, 3, '...', totalPages);
-            } else if (currentPage > totalPages - 3) {
-                pageNumbers.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
-            } else {
-                pageNumbers.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-            }
-        }
-
-        return pageNumbers.map((number, index) => (
-            <button
-                key={index}
-                onClick={() => number !== '...' && paginate(number)}
-                className={`page-item ${currentPage === number ? 'active' : ''}`}
-                disabled={number === '...'}
-            >
-                {number}
-            </button>
-        ));
     };
 
     const renderIcon = (detail, type) => {
@@ -129,7 +94,7 @@ const DetailSummaryQuiz = () => {
                         </select>
                     </div>
                     {resultsList.length === 0 ? (
-                        <p className="text-center">There's no quizzes result.</p>
+                        <p className="text-center">No students have taken the quiz yet</p>
                     ) : (
                         <>
                             <table className="custom-result-table">
@@ -156,23 +121,6 @@ const DetailSummaryQuiz = () => {
                                     ))}
                                 </tbody>
                             </table>
-                            <div className="pagination">
-                                <button
-                                    onClick={handlePrevPage}
-                                    className="page-item"
-                                    disabled={currentPage === 1}
-                                >
-                                    <FaChevronLeft />
-                                </button>
-                                {renderPagination()}
-                                <button
-                                    onClick={handleNextPage}
-                                    className="page-item"
-                                    disabled={currentPage === Math.ceil(resultsList.length / resultsPerPage)}
-                                >
-                                    <FaChevronRight />
-                                </button>
-                            </div>
                         </>
                     )}
                 </div>

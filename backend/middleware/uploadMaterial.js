@@ -6,8 +6,9 @@ const storage = multer.diskStorage({
     cb(null, '../frontend/public/uploads/materials'); 
   },
   filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    cb(null, `${file.originalname}`);
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '_');
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    cb(null, `${path.basename(file.originalname, fileExtension)}_${timestamp}${fileExtension}`);
   },
 });
 

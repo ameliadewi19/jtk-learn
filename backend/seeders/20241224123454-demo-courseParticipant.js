@@ -22,8 +22,8 @@ module.exports = {
 
     await queryInterface.bulkInsert('courseParticipant', [
       {
-        id_course: idCourse,
-        id_pelajar: idPelajar,
+        id_course: 1,
+        id_pelajar: 1,
         persentase_course: 0,
         status_penyelesaian: 'In Progress',
         createdAt: new Date(),
@@ -34,6 +34,14 @@ module.exports = {
         id_pelajar: 1,
         persentase_course: 100,
         status_penyelesaian: 'Completed',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id_course: 1,
+        id_pelajar: 2,
+        persentase_course: 50,
+        status_penyelesaian: 'In Progress',
         createdAt: new Date(),
         updatedAt: new Date(),
       }

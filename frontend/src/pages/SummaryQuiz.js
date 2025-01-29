@@ -45,50 +45,6 @@ const SummaryQuiz = () => {
   const indexOfFirstQuiz = indexOfLastQuiz - quizzesPerPage;
   const currentQuizzes = quizList.slice(indexOfFirstQuiz, indexOfLastQuiz);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < Math.ceil(quizList.length / quizzesPerPage)) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const renderPagination = () => {
-    const totalPages = Math.ceil(quizList.length / quizzesPerPage);
-    const pageNumbers = [];
-
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pageNumbers.push(1, 2, 3, '...', totalPages);
-      } else if (currentPage > totalPages - 3) {
-        pageNumbers.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pageNumbers.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-      }
-    }
-
-    return pageNumbers.map((number, index) => (
-      <button
-        key={index}
-        onClick={() => number !== '...' && paginate(number)}
-        className={`page-item ${currentPage === number ? 'active' : ''}`}
-        disabled={number === '...'}
-      >
-        {number}
-      </button>
-    ));
-  };
-
   if (loading) {
     return <div className="text-center mt-5">Loading...</div>;
   }
@@ -101,7 +57,7 @@ const SummaryQuiz = () => {
         </div>
         <div className="quiz-table">
           {quizList.length === 0 ? (
-            <p className="text-center">There's no quizzes.</p>
+            <p className="text-center">No quiz has been created yet</p>
           ) : (
             <>
               <table className="custom-quiz-table">
@@ -117,9 +73,9 @@ const SummaryQuiz = () => {
                     <tr key={quiz.id}>
                       <td>{indexOfFirstQuiz + index + 1}</td>
                       <td>{quiz.nama_course}: {quiz.nama_quiz}</td>
-                      <td>
+                      <td className="result-column">
                         <button
-                          className="btn-danger fw-bold"
+                          className="result-button"
                           onClick={() => handleResultClick(quiz.id_quiz, quiz.nama_quiz, quiz.nama_course)}
                         >
                           View Result
@@ -129,23 +85,6 @@ const SummaryQuiz = () => {
                   ))}
                 </tbody>
               </table>
-              <div className="pagination">
-                <button
-                  onClick={handlePrevPage}
-                  className="page-item"
-                  disabled={currentPage === 1}
-                >
-                  <FaChevronLeft />
-                </button>
-                {renderPagination()}
-                <button
-                  onClick={handleNextPage}
-                  className="page-item"
-                  disabled={currentPage === Math.ceil(quizList.length / quizzesPerPage)}
-                >
-                  <FaChevronRight />
-                </button>
-              </div>
             </>
           )}
         </div>

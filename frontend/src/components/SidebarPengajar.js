@@ -27,6 +27,7 @@ const SidebarPengajar = () => {
   const [isEditQuiz, setIsEditQuiz] = useState(false);
   const token = localStorage.getItem('token');
   const incrementalId = useRef(0);
+  const dropdownRef = useRef(null);
 
   const fetchCourse = async () => {
     try {
@@ -53,7 +54,7 @@ const SidebarPengajar = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       return response.data.map((materi) => ({
         id: incrementalId.current++,
         id_item: materi.id_materi,
@@ -66,7 +67,7 @@ const SidebarPengajar = () => {
       return []; // Return an empty array on error to prevent issues in Promise.all
     }
   };
-  
+
   const fetchQuizData = async (idQuiz) => {
     try {
       const response = await api.get(`/quizzes/${idQuiz}`, {
@@ -130,15 +131,6 @@ const SidebarPengajar = () => {
     }
   }, [id]);
 
-  useEffect(() => {
-    if (id) {
-      fetchMateriByCourse();
-      fetchQuizByCourse();
-      fetchCourse();
-      fetchAllData();
-    }
-  }, [id]);
-
   const handleClick = (item) => {
     setSelectedItem(item.id);
   };
@@ -146,6 +138,7 @@ const SidebarPengajar = () => {
   const handleDropdownToggle = (id) => {
     setOpenDropdown(openDropdown === id ? null : id);
   };
+
 
   const handleEdit = (item) => {
     if (item.type === 'quiz') {
@@ -293,7 +286,7 @@ const SidebarPengajar = () => {
     fetchQuizByCourse(); // Refetch quiz data after submission
   };
 
-  const handleMaterialSubmit = (data) => {
+   const handleMaterialSubmit = (data) => {
     try {
       if (isEditMaterial) {
         api.put(`/materials/${data.id_materi}`, data, {
@@ -311,7 +304,18 @@ const SidebarPengajar = () => {
                 return item;
               }),
             }));
-            Swal.fire('Success', 'Material has been updated successfully.', 'success');
+            Swal.fire({
+              title: 'Success',
+              text: 'Material has been updated successfully.',
+              icon: 'success',
+            }).then((result) => {
+              if (result.isConfirmed || result.isDismissed) {
+                setOpenDropdown(null);
+                fetchMateriByCourse();
+                fetchAllData();
+                setShowMaterialModal(false); // Move this inside the then block
+              }
+            });
           })
           .catch((error) => {
             console.error('Error updating material:', error);
@@ -326,11 +330,27 @@ const SidebarPengajar = () => {
           .then((response) => {
             setCourse((prevCourse) => ({
               ...prevCourse,
-              items: [...prevCourse.items, { id: incrementalId.current++, name: data.nama_materi, type: 'materi' }],
+              items: [
+                ...prevCourse.items,
+                {
+                  id: incrementalId.current++,
+                  name: data.nama_materi,
+                  type: 'materi',
+                },
+              ],
             }));
-            Swal.fire('Success', 'Materi berhasil ditambahkan!', 'success');
-          })
-          .catch((error) => {
+  
+            Swal.fire({
+              title: 'Success',
+              text: 'Materi berhasil ditambahkan!',
+              icon: 'success',
+            }).then((result) => {
+              if (result.isConfirmed || result.isDismissed) {
+                fetchMateriByCourse(); // Refresh daftar materi setelah alert ditutup
+                setShowMaterialModal(false); // Move this inside the then block
+              }
+            });
+          }).catch((error) => {
             console.error('Error creating material:', error);
             Swal.fire('Error', 'Failed to create material. Please try again later.', 'error');
           });
@@ -339,9 +359,8 @@ const SidebarPengajar = () => {
       console.error('Error submitting material:', error);
       Swal.fire('Error', 'Failed to submit material. Please try again later.', 'error');
     }
-    setShowMaterialModal(false);
-    fetchMateriByCourse(); // Refetch material data after submission
   };
+
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
