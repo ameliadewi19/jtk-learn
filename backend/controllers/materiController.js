@@ -57,7 +57,7 @@ const updateMateri = async (req, res) => {
 
     if (req.file) {
       // Hapus file lama jika ada
-      const oldFilePath = path.join(__dirname, '../frontend/public/uploads/materials', materi.konten_materi);
+      const oldFilePath = path.join(__dirname, '../../frontend/public/uploads/materials', `${materi.konten_materi}`);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath); // Hapus file lama
       }
@@ -87,6 +87,15 @@ const deleteMateri = async (req, res) => {
     if (!materi) {
       return res.status(404).json({ message: 'Materi not found.' });
     }
+
+    // Construct the file path
+    const filePath = path.join(__dirname, '../../frontend/public/uploads/materials', `${materi.konten_materi}`);
+
+    // Check if the file exists and delete it
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
 
     await materi.destroy();
 

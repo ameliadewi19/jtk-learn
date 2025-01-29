@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -7,7 +7,6 @@ import Swal from "sweetalert2";
 import api from "../services/api";
 import QuizModal from "./QuizModal";
 import MaterialModal from './MaterialModal';
-
 
 const SidebarPengajar = () => {
   const { id } = useParams(); // Get the id from the URL parameters
@@ -27,7 +26,6 @@ const SidebarPengajar = () => {
   const [isEditQuiz, setIsEditQuiz] = useState(false);
   const token = localStorage.getItem('token');
   const incrementalId = useRef(0);
-  const dropdownRef = useRef(null);
 
   const fetchCourse = async () => {
     try {
@@ -138,7 +136,6 @@ const SidebarPengajar = () => {
   const handleDropdownToggle = (id) => {
     setOpenDropdown(openDropdown === id ? null : id);
   };
-
 
   const handleEdit = (item) => {
     if (item.type === 'quiz') {
@@ -286,7 +283,7 @@ const SidebarPengajar = () => {
     fetchQuizByCourse(); // Refetch quiz data after submission
   };
 
-   const handleMaterialSubmit = (data) => {
+  const handleMaterialSubmit = (data) => {
     try {
       if (isEditMaterial) {
         api.put(`/materials/${data.id_materi}`, data, {
@@ -334,20 +331,20 @@ const SidebarPengajar = () => {
                 ...prevCourse.items,
                 {
                   id: incrementalId.current++,
+                  id_item: response.data.id_materi,
                   name: data.nama_materi,
                   type: 'materi',
                 },
               ],
             }));
-  
             Swal.fire({
               title: 'Success',
-              text: 'Materi berhasil ditambahkan!',
+              text: 'Material has been created successfully.',
               icon: 'success',
             }).then((result) => {
               if (result.isConfirmed || result.isDismissed) {
-                fetchMateriByCourse(); // Refresh daftar materi setelah alert ditutup
                 setShowMaterialModal(false); // Move this inside the then block
+                fetchMateriByCourse(); // Refresh daftar materi setelah alert ditutup
               }
             });
           }).catch((error) => {
@@ -360,7 +357,6 @@ const SidebarPengajar = () => {
       Swal.fire('Error', 'Failed to submit material. Please try again later.', 'error');
     }
   };
-
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
