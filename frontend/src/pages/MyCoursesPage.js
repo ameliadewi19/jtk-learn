@@ -22,7 +22,7 @@ const MyCoursesPage = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-    
+
                 const inProgress = [];
                 const completed = [];
                 response.data.forEach((item) => {
@@ -39,7 +39,7 @@ const MyCoursesPage = () => {
                         inProgress.push(course);
                     }
                 });
-    
+
                 setInProgressCourses(inProgress);
                 setCompletedCourses(completed);
             } catch (err) {
@@ -48,10 +48,10 @@ const MyCoursesPage = () => {
                 setLoading(false);
             }
         };
-    
+
         fetchCourses();
-    }, [token, user.userData.id_pelajar]);    
-    
+    }, [token, user.userData.id_pelajar]);
+
     if (loading) return <p>Loading...</p>;
 
     const handleTabChange = (tab) => {
@@ -62,46 +62,46 @@ const MyCoursesPage = () => {
         navigate(`/course/${id}`);
     };
 
-    return(
+    return (
         <>
             <ul className="nav nav-tabs ms-5 mt-3 mb-3" id="justify-tab" role="tablist">
                 <li className="nav-item-tab" role="presentation">
-                <button
-                    className={`nav-link ${activeTab === 'inprogress' ? 'active' : ''} nav-link-tab`}
-                    id="inprogress-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#inprogress"
-                    type="button"
-                    role="tab"
-                    aria-controls="inprogress"
-                    aria-selected={activeTab === 'inprogress'}
-                    onClick={() => handleTabChange('inprogress')}
-                >
-                    In Progress
-                </button>
+                    <button
+                        className={`nav-link ${activeTab === 'inprogress' ? 'active' : ''} nav-link-tab`}
+                        id="inprogress-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#inprogress"
+                        type="button"
+                        role="tab"
+                        aria-controls="inprogress"
+                        aria-selected={activeTab === 'inprogress'}
+                        onClick={() => handleTabChange('inprogress')}
+                    >
+                        In Progress
+                    </button>
                 </li>
                 <li className="nav-item-tab" role="presentation">
-                <button
-                    className={`nav-link ${activeTab === 'completed' ? 'active' : ''} nav-link-tab`}
-                    id="completed-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#completed"
-                    type="button"
-                    role="tab"
-                    aria-controls="completed"
-                    aria-selected={activeTab === 'completed'}
-                    onClick={() => handleTabChange('completed')}
-                >
-                    Completed
-                </button>
+                    <button
+                        className={`nav-link ${activeTab === 'completed' ? 'active' : ''} nav-link-tab`}
+                        id="completed-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#completed"
+                        type="button"
+                        role="tab"
+                        aria-controls="completed"
+                        aria-selected={activeTab === 'completed'}
+                        onClick={() => handleTabChange('completed')}
+                    >
+                        Completed
+                    </button>
                 </li>
             </ul>
             <div className="tab-content">
                 <div
-                className={`tab-pane fade ${activeTab === 'inprogress' ? 'show active' : ''}`}
-                id="inprogress"
-                role="tabpanel"
-                aria-labelledby="inprogress-tab"
+                    className={`tab-pane fade ${activeTab === 'inprogress' ? 'show active' : ''}`}
+                    id="inprogress"
+                    role="tabpanel"
+                    aria-labelledby="inprogress-tab"
                 >
                     <div className="container-fluid py-4">
                         <div className="container-dashboard">
@@ -129,7 +129,7 @@ const MyCoursesPage = () => {
                                                                 role="progressbar"
                                                                 style={{
                                                                     width: `${course.progress}%`,
-                                                                }}                    
+                                                                }}
                                                                 aria-valuenow={course.progress}
                                                                 aria-valuemin="0"
                                                                 aria-valuemax="100"
@@ -142,17 +142,17 @@ const MyCoursesPage = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-center">No courses in progress.</p>
+                                    <p style={{ fontSize: '20px', textAlign: 'center' }}>No courses in progress.</p>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
                 <div
-                className={`tab-pane fade ${activeTab === 'completed' ? 'show active' : ''}`}
-                id="completed"
-                role="tabpanel"
-                aria-labelledby="completed-tab"
+                    className={`tab-pane fade ${activeTab === 'completed' ? 'show active' : ''}`}
+                    id="completed"
+                    role="tabpanel"
+                    aria-labelledby="completed-tab"
                 >
                     <div className="container-fluid py-4">
                         <div className="container-dashboard">
@@ -193,7 +193,7 @@ const MyCoursesPage = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-center">No courses completed.</p>
+                                    <p style={{ fontSize: '20px', textAlign: 'center' }}>No courses completed.</p>
                                 )}
                             </div>
                         </div>

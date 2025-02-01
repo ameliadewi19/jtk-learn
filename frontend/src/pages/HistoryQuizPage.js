@@ -26,11 +26,27 @@ const HistoryQuiz = () => {
                 waktuSelesai: historyQuiz.waktu_selesai,
                 nilai: historyQuiz.nilai,
             }));
+            console.log(mappedHistoryQuiz);
             setHistoryQuizList(mappedHistoryQuiz);
         } catch (error) {
             console.error('Error fetching history quiz:', error);
         }
     }
+
+    const formatDate = (date) => {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); 
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const handleClickDetail = (id) => {
+        console.log(id);
+    };
 
     useEffect(() => {
         fetchAllHistoryQuiz();
@@ -44,34 +60,46 @@ const HistoryQuiz = () => {
                 <div className="dashboard-flex">
                     <h3 className="courses-title">History Quiz</h3>
                 </div>
+                <div className='row row-custom-gap2'>
                     {historyQuizList.length > 0 ? (
-                        <ul>
-                            {historyQuizList.map((quiz) => (
-                                <li key={quiz.id}>
-                                    <h2>{quiz.title}</h2>
-                                    <p>
-                                        <strong>Course:</strong> {quiz.courseName}
-                                    </p>
-                                    <p>
-                                        <strong>Description:</strong> {quiz.description}
-                                    </p>
-                                    <p>
-                                        <strong>Start Time:</strong> {new Date(quiz.waktuMulai).toLocaleString()}
-                                    </p>
-                                    <p>
-                                        <strong>End Time:</strong> {new Date(quiz.waktuSelesai).toLocaleString()}
-                                    </p>
-                                    <p>
-                                        <strong>Score:</strong> {quiz.nilai}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
+                        historyQuizList.map((quiz) => (
+                            <div key={quiz.id} className="col-12 col-sm-5 col-lg-4">
+                                <div className="history-card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            {quiz.courseName}: {quiz.title}
+                                        </h5>
+                                        <div className="card-description">
+                                            <p className="card-text">{quiz.description}</p>
+                                        </div>
+                                        <div className="card-dates">
+                                            <p className="card-text">
+                                                Waktu Mulai: {formatDate(new Date(quiz.waktuMulai))}
+                                            </p>
+                                            <p className="card-text">
+                                                Waktu Selesai: {formatDate(new Date(quiz.waktuSelesai))}
+                                            </p>
+                                        </div>
+                                        <div className="card-score">
+                                            <p className="card-text">Highest Score: {quiz.nilai}</p>
+                                        </div>
+                                        <button
+                                            className="detail-course-button"
+                                            onClick= {() => handleClickDetail(quiz.id)}
+                                        >
+                                            Detail
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
                     ) : (
-                        <p>Belum ada quiz yang diselesaikan</p>
+                        <p style={{ fontSize: '20px', textAlign: 'center' }}>No quizzes have been completed yet.
+                        </p>
                     )}
-                </div>
-            </div>
+                </div >
+            </div >
+        </div>
     );
 };
 
