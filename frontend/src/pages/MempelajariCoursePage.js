@@ -25,7 +25,7 @@ const MempelajariCoursePage = () => {
 
   const handleMateriChange = (materi) => {
     setActiveMateri(materi);
-    setQuizCompleted(false); // Reset quiz completion state when changing to a new materi
+    setQuizCompleted(false);
     if (materi?.type === "quiz") {
       setIsStartQuizMode(true);
       setIsQuizMode(false);
@@ -39,9 +39,12 @@ const MempelajariCoursePage = () => {
     setTotalScore(nilai);
     setCorrectAnswers(benar);
     setQuizCompleted(true);
+  
     if (activeMateri.type === "quiz") {
       setCompletedQuizzes((prevQuizzes) => [...prevQuizzes, activeMateri.id_quiz]);
+      localStorage.setItem(`quizCompleted_${activeMateri.id_quiz}`, JSON.stringify({ totalScore: nilai, correctAnswers: benar }));
     }
+  
     setIsQuizMode(false);
   };
 
@@ -63,19 +66,21 @@ const MempelajariCoursePage = () => {
       if (activeMateri.type === "quiz") {
         setIsStartQuizMode(true);
         setIsQuizMode(false);
+        //jadikan comment kalau mau mengerjakan quiz lagi setelah nilainya 100, dari sini
+        const savedQuizResult = localStorage.getItem(`quizCompleted_${activeMateri.id_quiz}`);
+        if (savedQuizResult) {
+          const { totalScore, correctAnswers } = JSON.parse(savedQuizResult);
+          setTotalScore(totalScore);
+          setCorrectAnswers(correctAnswers);
+          setQuizCompleted(true);
+          setCompletedQuizzes((prev) => [...prev, activeMateri.id_quiz]);
+        }
+        //jadikan comment kalau mau mengerjakan quiz lagi setelah nilainya 100, sampai sini
       } else {
         setIsStartQuizMode(false);
       }
     }
-  }, [activeMateri]);
-
-  // useEffect(() => {
-  //   if (activeCourse?.items) {
-  //     setCourseMateri(activeCourse.items); // Gunakan items dari activeCourse
-  //   } else {
-  //     setCourseMateri([]); // Pastikan tetap array
-  //   }
-  // }, [activeCourse]);  
+  }, [activeMateri]);   
 
   const calculateCourseProgress = (currentMateriIndex, totalMateri) => {
     if (totalMateri === 0) return 0;
@@ -190,6 +195,7 @@ const MempelajariCoursePage = () => {
   };
   
   const isQuizResultVisible = activeMateri?.type === "quiz" && completedQuizzes.includes(activeMateri.id_quiz) && !isQuizMode;
+  
   console.log("Active Course:", activeCourse);
   console.log("Active Materi:", activeMateri);
   console.log("Course Items Length:", activeMateri?.items?.length);

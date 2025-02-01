@@ -12,7 +12,6 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
-  const [courseData, setCourseData] = useState({});
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -49,7 +48,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
 
       const combinedData = [...mappedMateri, ...mappedQuiz]
         .sort((a, b) => a.id - b.id_quiz) // Pastikan urutan tetap
-        .map((item, index) => ({ ...item, new_id: index+1 })); // new_id dimulai dari 0
+        .map((item, index) => ({ ...item, new_id: index+1 }));
 
 
       setCourse((prevCourse) => ({
@@ -57,7 +56,13 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
         items: combinedData,
       }));
 
-      if (combinedData.length > 0) {
+      const lastOpenedItem = localStorage.getItem(`lastOpenedItem-${id}`);
+      const foundItem = combinedData.find((item) => item.new_id === Number(lastOpenedItem));
+
+      if (foundItem) {
+        setSelectedItem(foundItem.new_id);
+        onMateriChange(foundItem);
+      } else if (combinedData.length > 0) {
         setSelectedItem(combinedData[0].new_id);
         onMateriChange(combinedData[0]);
       }
@@ -130,6 +135,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const handleClick = (item) => {
     setSelectedItem(item.new_id);
     onMateriChange(item);
+    localStorage.setItem(`lastOpenedItem-${id}`, item.new_id);
   };
 
   return (

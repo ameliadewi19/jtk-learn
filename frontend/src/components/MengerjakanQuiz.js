@@ -2,13 +2,14 @@ import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import api from "../services/api";
 import Swal from "sweetalert2";
-import { UserContext } from "../components/UserContext";
+import { UserContext } from "./UserContext";
+import { useQuiz } from "./QuizContext";
 
 const MengerjakanQuiz = ({ quizData, onSubmitQuiz, isReviewMode, onBackToQuizResult }) => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [correctAnswersMap, setCorrectAnswersMap] = useState({});
-  const [results, setResults] = useState({});
+  const { results, setResults } = useQuiz();
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState((quizData?.duration || 0) * 60);
   const [startTime, setStartTime] = useState(null);
@@ -92,17 +93,11 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz, isReviewMode, onBackToQuizRes
               Authorization: `Bearer ${token}`,
             },
           });
-  
-          const historyDetails = response.data;
-          const mappedResults = {};
-  
-          historyDetails.forEach((detail) => {
-            if (detail.id_jawaban) {
-              mappedResults[detail.id_pertanyaan] = detail.jawaban.id_jawaban;
-            } else {
-              mappedResults[detail.id_pertanyaan] = detail.jawaban_text;
-            }
-          });
+          
+          const mappedResults = response.data.reduce((acc, detail) => {
+            acc[detail.id_pertanyaan] = detail.id_jawaban || detail.jawaban_text || "";
+            return acc;
+          }, {});
   
           setResults(mappedResults);
           console.log("Jawaban dari history:", mappedResults);
