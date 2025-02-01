@@ -153,7 +153,6 @@ const upsertHistoryQuiz = async (req, res) => {
     }
 };
 
-
 module.exports = {
     getAllHistoryQuiz,
     getHistoryQuizByID,
