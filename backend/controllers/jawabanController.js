@@ -1,5 +1,22 @@
 const { Jawaban, Pertanyaan } = require('../models');
 
+const getAllJawaban = async (req, res) => {
+    try {
+        const jawaban = await Jawaban.findAll({
+            where: { status_jawaban: "benar" },
+            include: {
+                model: Pertanyaan,
+                as: 'pertanyaan',
+            },
+        });
+        res.status(200).json(jawaban);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
 // get all jawaban by id pertanyaan
 const getJawabanByIdPertanyaan = async (id_pertanyaan) => {
     try {
@@ -34,6 +51,7 @@ const updateJawaban = async (id, nama_jawaban, konten_jawaban, status_jawaban, t
 };
 
 module.exports = {
+    getAllJawaban,
     getJawabanByIdPertanyaan,
     createJawaban,
     updateJawaban

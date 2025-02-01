@@ -6,21 +6,76 @@ import MengerjakanQuiz from "../components/MengerjakanQuiz";
 import StartQuiz from "../components/StartQuiz";
 import QuizResult from "../components/QuizResult";
 import api from "../services/api";
-import Swal from "sweetalert2";
 import { UserContext } from "../components/UserContext";
 
 const MempelajariCoursePage = () => {
-  const [courseMateri, setCourseMateri] = useState([]);
   const [activeMateri, setActiveMateri] = useState(null);
+  const [courseMateri, setCourseMateri] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
   const [isStartQuizMode, setIsStartQuizMode] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
-  const [quizCompleted, setQuizCompleted] = useState(false);
   const [totalScore, setTotalScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [completedQuizzes, setCompletedQuizzes] = useState([]);
+  const [isReviewMode, setIsReviewMode] = useState(false);
   const [progressMap, setProgressMap] = useState({});
   const { user } = useContext(UserContext);
   const token = localStorage.getItem("token");
+
+  const handleMateriChange = (materi) => {
+    setActiveMateri(materi);
+    setQuizCompleted(false); // Reset quiz completion state when changing to a new materi
+    if (materi?.type === "quiz") {
+      setIsStartQuizMode(true);
+      setIsQuizMode(false);
+    } else {
+      setIsStartQuizMode(false);
+      setIsQuizMode(false);
+    }
+  };
+
+  const handleQuizSubmit = ({ hasil, nilai, benar }) => {
+    setTotalScore(nilai);
+    setCorrectAnswers(benar);
+    setQuizCompleted(true);
+    if (activeMateri.type === "quiz") {
+      setCompletedQuizzes((prevQuizzes) => [...prevQuizzes, activeMateri.id_quiz]);
+    }
+    setIsQuizMode(false);
+  };
+
+  const updateCProgress = (courseId, progress) => {
+    setProgressMap((prevMap) => ({
+      ...prevMap,
+      [courseId]: progress,
+    }));
+  };
+
+  const handleCourseChange = (course) => {
+    setActiveCourse(course);
+    setActiveMateri(null);
+    setIsQuizMode(false);
+  };
+
+  useEffect(() => {
+    if (activeMateri) {
+      if (activeMateri.type === "quiz") {
+        setIsStartQuizMode(true);
+        setIsQuizMode(false);
+      } else {
+        setIsStartQuizMode(false);
+      }
+    }
+  }, [activeMateri]);
+
+  // useEffect(() => {
+  //   if (activeCourse?.items) {
+  //     setCourseMateri(activeCourse.items); // Gunakan items dari activeCourse
+  //   } else {
+  //     setCourseMateri([]); // Pastikan tetap array
+  //   }
+  // }, [activeCourse]);  
 
   const calculateCourseProgress = (currentMateriIndex, totalMateri) => {
     if (totalMateri === 0) return 0;
@@ -28,14 +83,17 @@ const MempelajariCoursePage = () => {
     return Math.min(Math.round(progress), 100);
   };
 
-  const handleProgressUpdate = async () => {
+  const lastNewId = courseMateri.length > 0 
+    ? Math.max(...courseMateri.map(m => m.new_id)) 
+    : 0;
+
+  const updateProgress = async () => {
     try {
-      const currentMateriIndex = courseMateri.findIndex(
-        (m) => m.id === activeMateri.id
-      );
+      const currentMateriIndex = activeMateri.new_id;
+
       const newProgress = calculateCourseProgress(
         currentMateriIndex,
-        courseMateri.length
+        lastNewId
       );
       const statusPenyelesaian = newProgress === 100 ? "Completed" : "In Progress";
 
@@ -66,95 +124,139 @@ const MempelajariCoursePage = () => {
     }
   };
 
-  const handleMateriChange = (materi) => {
-    setActiveMateri(materi);
-    setIsQuizMode(materi?.type === "quiz");
-  };
+  const isFirstMateri = activeMateri?.new_id === 1;
+  const isLastMateri = activeMateri?.new_id === activeMateri?.items?.length;
 
-  const handleMateriNext = () => {
-    const currentIndex = courseMateri.findIndex(
-      (m) => m.new_id === activeMateri.new_id
-    );
+  const handleNext = () => {
+    if (!activeMateri) return;
+  
+    const currentIndex = activeMateri.new_id;
     const nextIndex = currentIndex + 1;
+    const nextMateri = nextIndex;
+    console.log("nextMateri:", nextMateri);
 
-    if (nextIndex < courseMateri.length) {
-      setActiveMateri(courseMateri[nextIndex]);
+    if (nextMateri) {
+      setActiveMateri(nextMateri);
+      updateProgress();
     }
-    handleProgressUpdate();
   };
-
-  const handleQuizSubmit = ({hasil, nilai, benar}) => {
-    setTotalScore(nilai);
-    setCorrectAnswers(benar);
-    setQuizCompleted(true);
-    setIsQuizMode(false);
-  };
-
-  const updateCProgress = (courseId, progress) => {
-    setProgressMap((prevMap) => ({
-      ...prevMap,
-      [courseId]: progress,
-    }));
-  };
-
-  const handleCourseChange = (course) => {
-    setActiveCourse(course);
-    setActiveMateri(null);
-    setIsQuizMode(false);
+  
+  const handlePrev = () => {
+    if (!activeMateri) return;
+  
+    const currentIndex = activeMateri.new_id;
+    const prevIndex = currentIndex - 1;
+    const prevMateri = activeMateri?.items?.find((item) => item.new_id === prevIndex);
+    console.log("prevMateri:", prevMateri);
+    
+    if (prevMateri) {
+      setActiveMateri(prevMateri);
+      setQuizCompleted(false);
+      setIsStartQuizMode(prevMateri.type === "quiz");
+      setIsQuizMode(false);
+    }
   };
 
   useEffect(() => {
-    if (activeMateri && activeMateri.type === "quiz") {
-      setIsStartQuizMode(true);
-      setIsQuizMode(false);
+    if (activeCourse?.items?.length > 0) {
+      setActiveMateri(activeCourse.items[0]);
     }
-  }, [activeMateri]);  
+  }, [activeCourse]);
+
+  const handleRetakeQuiz = () => {
+    setIsQuizMode(true);
+    setIsStartQuizMode(false);
+    setQuizCompleted(false);
+    setTotalScore(0);
+    setCorrectAnswers(0);
+    setCompletedQuizzes((prev) => prev.filter(id => id !== activeMateri.id_quiz));
+  };
+  
+  const handleReviewAllQuestions = () => {
+    setIsReviewMode(true);
+    setIsStartQuizMode(false);
+    setCompletedQuizzes((prev) => prev.filter(id => id !== activeMateri.id_quiz));
+  };
+  
+  const handleBackToQuizResult = () => {
+    setIsReviewMode(false);
+    setIsQuizMode(false);
+    setCompletedQuizzes((prev) => {
+      if (!prev.includes(activeMateri.id_quiz)) {
+        return [...prev, activeMateri.id_quiz];
+      }
+      return prev;
+    });
+  };
+  
+  const isQuizResultVisible = activeMateri?.type === "quiz" && completedQuizzes.includes(activeMateri.id_quiz) && !isQuizMode;
+  console.log("Active Course:", activeCourse);
+  console.log("Active Materi:", activeMateri);
+  console.log("Course Items Length:", activeMateri?.items?.length);
 
   return (
-    <div
-      className="container-fluid d-flex"
-      style={{
-        padding: "0px",
-        background: "#d9d9d9",
-        height: "100vh",
-      }}
-    >
+    <div className="container-fluid d-flex" style={{ padding: "0px", background: "#d9d9d9", height: "100vh" }}>
       <div>
         <SidebarPelajar
-          onMateriChange={handleMateriChange} // mengubah materi aktif
-          onLoadMateri={setCourseMateri} // mengisi daftar materi
+          onMateriChange={handleMateriChange}
           activeMateri={activeMateri}
           onCourseChange={handleCourseChange}
           updateCProgress={updateCProgress}
         />
       </div>
-      <div className="flex-grow-1 d-flex align-items-center justify-content-center p-4 border-main-content">
-        {quizCompleted?(
-          <QuizResult quizData={activeMateri} totalScore={totalScore} correctAnswers={correctAnswers} />
-        ): activeMateri? (
-            isQuizMode ? (
-              <MengerjakanQuiz
-                quizData={activeMateri} // Data quiz aktif
-                onSubmitQuiz={handleQuizSubmit} // Callback submit quiz
-              />
-            ) : isStartQuizMode ? (
-              <StartQuiz
-                quizData={activeMateri} // Data quiz untuk StartQuiz
-                onStartQuiz={() => {
-                  setIsStartQuizMode(false); // Matikan mode StartQuiz
-                  setIsQuizMode(true); // Aktifkan mode MengerjakanQuiz
-                }}
-              />
-            ) : (
-              <MelihatMateri
-                activeMateri={activeMateri} // Data materi aktif
-                handleMateriNext={handleMateriNext} // Callback untuk materi berikutnya
-              />
-            )
+      <div className="flex-grow-1 d-flex align-items-center justify-content-center p-4 border-main-content" style={{ position: "relative" }}>
+        {isQuizResultVisible ? (
+          <QuizResult
+            quizData={activeMateri}
+            totalScore={totalScore}
+            correctAnswers={correctAnswers}
+            onRetakeQuiz={handleRetakeQuiz}
+            onReview={handleReviewAllQuestions}  // Pass handler untuk review
+          />
+        ) : activeMateri ? (
+          isQuizMode || isReviewMode ? (
+            <MengerjakanQuiz
+              quizData={activeMateri}
+              onSubmitQuiz={handleQuizSubmit}
+              isReviewMode={isReviewMode}  // Aktifkan mode review
+              onBackToQuizResult={handleBackToQuizResult}  // Fungsi untuk kembali ke quiz result
+            />
+          ) : isStartQuizMode ? (
+            <StartQuiz
+              quizData={activeMateri}
+              onStartQuiz={() => {
+                setIsStartQuizMode(false);
+                setIsQuizMode(true);
+              }}
+            />
           ) : (
-            <div className="text-center">
-              <h5>There are no materials or quizzes for this course yet</h5>
-            </div>
+            <MelihatMateri activeMateri={activeMateri} />
+          )
+        ) : (
+          <div className="text-center">
+            <h5>There are no materials or quizzes for this course yet</h5>
+          </div>
+        )}
+        {!isQuizMode && (
+          <div className="navigation-buttons">
+            {!isFirstMateri && (
+              <button
+                className="btn course-prev-button align-items-center"
+                onClick={handlePrev}
+              >
+                <span className="prev-button">&lt;</span> Previous
+              </button>
+            )}
+
+            {!isLastMateri && (
+              <button
+                className="btn course-next-button align-items-center"
+                onClick={handleNext}
+              >
+                Next <span className="next-button">&gt;</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

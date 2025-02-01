@@ -103,47 +103,40 @@ const deleteMateri = async (req, res) => {
   }
 };
 
-const createHistoryMateri = async (req, res) => {
-  try {
-      const { id_pelajar, id_materi, waktu_akses } = req.body;
-
-      const newHistoryMateri = await HistoryMateri.create({
-          id_pelajar,
-          id_materi,
-          waktu_akses,
-      });
-
-      res.status(201).json({
-          message: 'HistoryMateri created successfully.',
-          historyMateri: newHistoryMateri,
-      });
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-};
-
-const updateHistoryMateri = async (req, res) => {
+const upsertHistoryMateri = async (req, res) => {
   try {
       const { id_pelajar, id_materi } = req.params;
       const { waktu_akses } = req.body;
 
-      // Cari data berdasarkan id_pelajar dan id_materi
-      const historyMateri = await HistoryMateri.findOne({
+      // Debug log untuk payload
+      console.log("Received payload:", req.body);
+
+      // Cek apakah history materi sudah ada
+      let historyMateri = await HistoryMateri.findOne({
           where: { id_pelajar, id_materi },
       });
 
-      if (!historyMateri) {
-          return res.status(404).json({ message: 'HistoryMateri not found.' });
+      if (historyMateri) {
+          // Jika sudah ada, update waktu_akses
+          await historyMateri.update({ waktu_akses });
+
+          return res.status(200).json({
+              message: "HistoryMateri updated successfully."
+          });
+      } else {
+          // Jika belum ada, buat data baru
+          historyMateri = await HistoryMateri.create({
+              id_pelajar,
+              id_materi,
+              waktu_akses,
+          });
+
+          return res.status(201).json({
+              message: "HistoryMateri created successfully."
+          });
       }
-
-      // Update data langsung menggunakan instance model
-      await historyMateri.update({ waktu_akses });
-
-      res.status(200).json({
-          message: 'HistoryMateri updated successfully.',
-          historyMateri,
-      });
   } catch (error) {
+      console.error("Error in upsertHistoryMateri:", error);
       res.status(500).json({ error: error.message });
   }
 };
@@ -174,6 +167,5 @@ module.exports = {
     updateMateri, 
     deleteMateri,
     getMateriById,
-    createHistoryMateri,
-    updateHistoryMateri 
+    upsertHistoryMateri
 };

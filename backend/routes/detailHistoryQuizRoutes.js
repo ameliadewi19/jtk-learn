@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getDetailHistoryQuizData } = require('../controllers/detailHistoryQuizController');
+const { 
+        getAllDetailHistQuizByHistQuizID,
+        getDetailHistoryQuizData, 
+        upsertDetailHistoryQuiz 
+    } = require('../controllers/detailHistoryQuizController');
 const { authorizeRole } = require('../middleware/authorizeRole');
 
+router.get('/:id_history_quiz', authorizeRole(['pelajar']), getAllDetailHistQuizByHistQuizID);
 router.get('/:id_quiz', authorizeRole(['pengajar']), getDetailHistoryQuizData);
+router.put('/detail',authorizeRole(['pelajar']), upsertDetailHistoryQuiz);
 
 module.exports = router;

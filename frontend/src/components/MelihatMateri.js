@@ -1,8 +1,33 @@
-import React from "react";
+import { useEffect, useContext } from "react";
 import Swal from "sweetalert2";
+import api from "../services/api";
+import { UserContext } from "../components/UserContext";
 
-const MelihatMateri = ({ activeMateri, handleMateriNext }) => {
-  return (
+const MelihatMateri = ({ activeMateri }) => {
+    const { user } = useContext(UserContext);
+    const token = localStorage.getItem("token");
+
+    useEffect(() => {
+        if (activeMateri && user) {
+            const saveHistoryMateri = async () => {
+                try {
+
+                    const response = await api.put(
+                        `/materials/${user.userData.id_pelajar}/${activeMateri.id}`,
+                        { waktu_akses: new Date().toISOString() },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+    
+                    console.log("Response:", response.data);
+                } catch (error) {
+                    console.error("Failed to upsert history materi:", error);
+                }
+            };
+            saveHistoryMateri();
+        }
+    }, [activeMateri, user]);
+
+    return (
     <div
         className="content-box position-relative p-4 w-100"
         style={{ maxWidth: "1300px" }}
@@ -25,7 +50,7 @@ const MelihatMateri = ({ activeMateri, handleMateriNext }) => {
                   title="PDF Viewer"
                   style={{
                     width: "90%",
-                    height: "100%",
+                    height: "90%",
                     border: "none",
                   }}
                   onError={() =>
@@ -48,14 +73,6 @@ const MelihatMateri = ({ activeMateri, handleMateriNext }) => {
                 </video>
               )}
             </div>
-
-            <button
-              className="btn position-absolute course-next-button d-flex align-items-center"
-              onClick={handleMateriNext}
-            >
-              Next
-              <span className="next-button">&gt;</span>
-            </button>
           </>
         ) : (
           <p>Pilih materi dari sidebar untuk memulai.</p>

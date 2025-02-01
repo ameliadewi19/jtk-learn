@@ -1,6 +1,6 @@
 import React from "react";
 
-const QuizResult = ({ quizData, totalScore, correctAnswers}) => {
+const QuizResult = ({ quizData, totalScore, correctAnswers, onRetakeQuiz, onReview}) => {
     const isPerfectScore = totalScore === 100;
 
   return (
@@ -8,7 +8,7 @@ const QuizResult = ({ quizData, totalScore, correctAnswers}) => {
         style={{ maxWidth: "1300px" }}
     >
         <div className="position-absolute quiz-title">
-            <h3>{quizData.name}</h3>
+            <h3><b>{quizData.name}</b></h3>
         </div>
         <div className="start-quiz-container custom-quiz-guide">
             <h3>Quiz Result</h3>
@@ -27,12 +27,20 @@ const QuizResult = ({ quizData, totalScore, correctAnswers}) => {
             <div className="submit-container"
                 style={{display: "flex", gap: "10px"}}
             >
-                <button className="custom-btn">
-                    Retake Quiz
-                </button>
-                <button className="custom-btn">
-                    Review All Question Results
-                </button>
+                {isPerfectScore? (
+                    <button className="custom-btn" onClick={onReview}>
+                        Review All Question Results
+                    </button>
+                ):(
+                    <>
+                        <button className="custom-btn" onClick={onRetakeQuiz}>
+                            Retake Quiz
+                        </button>
+                        <button className="custom-btn" onClick={onReview}>
+                            Review All Question Results
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     </div>

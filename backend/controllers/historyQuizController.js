@@ -1,4 +1,4 @@
-const { sequelize, HistoryQuiz, Quiz, Course } = require('../models'); 
+const { sequelize, HistoryQuiz, Quiz, Course, Pelajar } = require('../models'); 
 
 const getAllHistoryQuiz = async (req, res) => {
     try {
@@ -76,21 +76,48 @@ const getHistoryQuizByID = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+// Get history quiz by score
+const getHistoryQuizByScore = async (req, res) => {
+  try {
+    const { id_pelajar, id_quiz, nilai } = req.params;
+
+    const history = await HistoryQuiz.findOne({
+      where: { id_pelajar, id_quiz, nilai },
+      include: [
+        {
+          model: Quiz,
+          as: "quiz",
+        },
+        {
+          model: Pelajar,
+          as: "pelajar",
+        },
+      ],
+    });
+
+    if (!history || history.length === 0) {
+      return res.status(404).json({
+        message: "No history found for the specified criteria.",
+      });
+    }
+
+    res.status(200).json(history);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
   
 const upsertHistoryQuiz = async (req, res) => {
     try {
       const { id_pelajar, id_quiz } = req.params;
       const { waktu_mulai, waktu_selesai, nilai } = req.body;
-  
-      // Debug log untuk payload
-      console.log("Received payload:", req.body);
       
       let historyQuiz = await HistoryQuiz.findOne({
         where: { id_pelajar, id_quiz },
       });
   
       if (historyQuiz) {
-        // Jika sudah ada, lakukan update
         await historyQuiz.update({ waktu_mulai, waktu_selesai, nilai });
   
         return res.status(200).json({
@@ -98,7 +125,6 @@ const upsertHistoryQuiz = async (req, res) => {
           data: historyQuiz,
         });
       } else {
-        // Jika tidak ada, buat resource baru
         historyQuiz = await HistoryQuiz.create({
           id_quiz,
           id_pelajar,
@@ -122,5 +148,6 @@ const upsertHistoryQuiz = async (req, res) => {
 module.exports = {
     getAllHistoryQuiz,
     getHistoryQuizByID,
-    upsertHistoryQuiz
+    upsertHistoryQuiz,
+    getHistoryQuizByScore
 };

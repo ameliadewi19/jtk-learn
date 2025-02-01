@@ -10,6 +10,7 @@ const participantRouter = require('./routes/participantRoutes')
 const detailHistoryQuizRouter = require('./routes/detailHistoryQuizRoutes');
 const quizRouter = require('./routes/quizRoutes');
 const historyQuizRouter = require('./routes/historyQuizRoutes');
+const jawabanRouter = require('./routes/JawabanRoutes');
 const bodyParser = require('body-parser');
 const app = express();
 
@@ -28,7 +29,8 @@ app.use('/materials', authenticate, authorizeRole(['pengajar','pelajar']), mater
 app.use('/participant', authenticate, authorizeRole(['pelajar']), participantRouter);
 app.use('/quizzes', authenticate, quizRouter);
 app.use('/detail-history-quiz', authenticate, detailHistoryQuizRouter);
-app.use('/history-quiz', authenticate, historyQuizRouter);
+app.use('/history-quiz', authenticate, authorizeRole(['pengajar','pelajar']), historyQuizRouter);
+app.use('/answers', authenticate, authorizeRole(['pengajar','pelajar']), jawabanRouter);
 
 // To check authentication
 app.get('/protected-route', authenticate, (req, res) => {

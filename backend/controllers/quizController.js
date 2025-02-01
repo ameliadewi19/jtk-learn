@@ -88,6 +88,7 @@ const getQuizById = async (req, res) => {
             })),
             jawaban: jawaban.map((jawabanList) =>
                 jawabanList.map((jawabanItem) => ({
+                    id_jawaban: jawabanItem.id_jawaban,
                     nama_jawaban: jawabanItem.nama_jawaban,
                     konten_jawaban: jawabanItem.konten_jawaban,
                     status_jawaban: jawabanItem.status_jawaban,

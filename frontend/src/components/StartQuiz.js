@@ -6,7 +6,7 @@ const StartQuiz = ({ quizData, onStartQuiz }) => {
         style={{ maxWidth: "1300px" }}
     >
         <div className="position-absolute quiz-title">
-            <h3>{quizData.name}</h3>
+            <h3><b>{quizData.name}</b></h3>
         </div>
         <div className="start-quiz-container custom-quiz-guide">
             <h3>Quiz</h3>
@@ -16,7 +16,7 @@ const StartQuiz = ({ quizData, onStartQuiz }) => {
                 Review the materials before starting. Good luck!
             </p>
             <div className="submit-container">
-                <button className="custom-btn">
+                <button className="custom-btn" onClick={onStartQuiz}>
                     Start Quiz
                 </button>
             </div>

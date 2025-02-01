@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useParams, useNavigate } from "react-router-dom";
@@ -17,7 +17,6 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
-  // const incrementalId = useRef(0);
 
   const fetchMateriDanQuiz = async () => {
     if (!activeCourse) return;
@@ -49,8 +48,9 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
       })) || [];
 
       const combinedData = [...mappedMateri, ...mappedQuiz]
-        .sort((a, b) => a.id - b.id_quiz)
-        .map((item, index) => ({ ...item, new_id: index + 1 }));
+        .sort((a, b) => a.id - b.id_quiz) // Pastikan urutan tetap
+        .map((item, index) => ({ ...item, new_id: index+1 })); // new_id dimulai dari 0
+
 
       setCourse((prevCourse) => ({
         ...prevCourse,
