@@ -83,32 +83,32 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz, isReviewMode, onBackToQuizRes
     const startTime = new Date().toISOString();
     setStartTime(startTime);
   }, []);
+  
+  const fetchHistoryDetails = async () => {
+    if (isReviewMode && quizData?.id_history_quiz) {
+      try {
+        const response = await api.get(`/detail-history-quiz/${quizData.id_history_quiz}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        const mappedResults = response.data.reduce((acc, detail) => {
+          acc[detail.id_pertanyaan] = detail.id_jawaban || detail.jawaban_text || "";
+          return acc;
+        }, {});
+
+        setResults(mappedResults);
+        console.log("Jawaban dari history:", mappedResults);
+      } catch (error) {
+        console.error("Error fetching history details:", error);
+      }
+    }
+  };
 
   useEffect(() => {
-    const fetchHistoryDetails = async () => {
-      if (isReviewMode && quizData?.id_history_quiz) {
-        try {
-          const response = await api.get(`/detail-history-quiz/${quizData.id_history_quiz}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          
-          const mappedResults = response.data.reduce((acc, detail) => {
-            acc[detail.id_pertanyaan] = detail.id_jawaban || detail.jawaban_text || "";
-            return acc;
-          }, {});
-  
-          setResults(mappedResults);
-          console.log("Jawaban dari history:", mappedResults);
-        } catch (error) {
-          console.error("Error fetching history details:", error);
-        }
-      }
-    };
-  
     fetchHistoryDetails();
-  }, [isReviewMode, quizData?.id_history_quiz, token]);
+  }, [fetchHistoryDetails]);
 
   useEffect(() => {
     const fetchAnswersdb = async () => {

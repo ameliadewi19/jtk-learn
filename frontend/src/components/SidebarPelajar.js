@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { UserContext } from "../components/UserContext";
+import { useCourse } from '../components/CourseContext';
 
 const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCProgress }) => {
   const [course, setCourse] = useState({ name: "", items: [] });
@@ -13,6 +14,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { setCombinedData } = useCourse();
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
@@ -49,7 +51,6 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
       const combinedData = [...mappedMateri, ...mappedQuiz]
         .sort((a, b) => a.id - b.id_quiz) // Pastikan urutan tetap
         .map((item, index) => ({ ...item, new_id: index+1 }));
-
 
       setCourse((prevCourse) => ({
         ...prevCourse,
@@ -111,11 +112,18 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   };
 
   useEffect(() => {
+    if (course.items.length > 0) {
+      setCombinedData(course.items);
+    }
+  }, [course.items, setCombinedData]);  
+
+  useEffect(() => {
     if (activeCourse && activeCourse.id === Number(id)) {
       updateCProgress(activeCourse.id, activeCourse.progress);
       fetchMateriDanQuiz();
     } else {
       setCourse({ name: "", items: [] }); // Kosongkan materi dan quiz jika course tidak sesuai
+      setCombinedData([]);
     }
   }, [activeCourse, id]);  
 

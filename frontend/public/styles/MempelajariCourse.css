@@ -25,9 +25,16 @@
     right: 0;
     width: auto;
     display: flex;
-    justify-content: space-between;
     padding: 0 20px;
     z-index: 1000;
+}
+
+.navigation-buttons.has-prev {
+    justify-content: space-between; /* Jika ada tombol Previous */
+}
+
+.navigation-buttons.only-next {
+    justify-content: flex-end; /* Jika hanya tombol Next */
 }
 
 .course-next-button {

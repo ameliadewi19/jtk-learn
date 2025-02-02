@@ -9,21 +9,25 @@ const MelihatMateri = ({ activeMateri }) => {
 
     useEffect(() => {
         if (activeMateri && user) {
-            const saveHistoryMateri = async () => {
-                try {
-
-                    const response = await api.put(
-                        `/materials/${user.userData.id_pelajar}/${activeMateri.id}`,
-                        { waktu_akses: new Date().toISOString() },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
+            const lastAccessedMateri = localStorage.getItem("lastAccessedMateri");
+            
+            if(lastAccessedMateri !== activeMateri.id){
+                const saveHistoryMateri = async () => {
+                    try {
     
-                    console.log("Response:", response.data);
-                } catch (error) {
-                    console.error("Failed to upsert history materi:", error);
-                }
-            };
-            saveHistoryMateri();
+                        const response = await api.put(
+                            `/materials/${user.userData.id_pelajar}/${activeMateri.id}`,
+                            { waktu_akses: new Date().toISOString() },
+                            { headers: { Authorization: `Bearer ${token}` } }
+                        );
+        
+                        console.log("Response:", response.data);
+                    } catch (error) {
+                        console.error("Failed to upsert history materi:", error);
+                    }
+                };
+                saveHistoryMateri();
+            }
         }
     }, [activeMateri, user]);
 
