@@ -12,19 +12,46 @@
     font-weight: bold;
 }
 
+.flex-grow-1 {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.navigation-buttons {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    width: auto;
+    display: flex;
+    padding: 0 20px;
+    z-index: 1000;
+}
+
+.navigation-buttons.has-prev {
+    justify-content: space-between; /* Jika ada tombol Previous */
+}
+
+.navigation-buttons.only-next {
+    justify-content: flex-end; /* Jika hanya tombol Next */
+}
+
 .course-next-button {
     right: 10px;
     padding: 10px 20px;
+    /* z-index: 1000; */
+    text-align: right;
 }
 
-.next-button{
+.prev-button,
+.next-button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    margin-left: 10px;
     width: 30px;
     height: 30px;
-    border-radius: 50px;
+    border-radius: 50%;
     background-color: #EA6488;
     color: #000;
     box-shadow: 0px 3px 5px rgba(234, 100, 136, 0.6);
@@ -37,6 +64,22 @@
 .course-next-button:focus,
 .next-button:hover,
 .next-button:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.course-prev-button {
+    left: 10px;
+    padding: 10px 20px;
+    /* z-index: 1000; */
+    text-align: left;
+}
+
+.course-prev-button:hover,
+.course-prev-button:focus,
+.prev-button:hover,
+.prev-button:focus {
     outline: none;
     border: none;
     box-shadow: none;
@@ -146,3 +189,30 @@ input[type="number"]:focus {
     font-weight: bold;
     box-shadow: 0 3px 3px rgba(234, 100, 136, 0.7);
 }
+
+.correct-answer {
+    border: 2px solid #2bfc5c;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.border-success {
+    border: 2px solid #2bfc5c !important;
+    padding: 3px;
+}
+
+.border-unsuccess {
+    border: 2px solid #000000 !important;
+    padding: 3px;
+}
+
+.text-success {
+    color: #2bfc5c;
+    font-weight: bold;
+}
+
+.text-unsuccess {
+    color: red;
+    font-weight: bold;
+}
+  

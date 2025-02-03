@@ -1,4 +1,39 @@
-const { DetailHistoryQuiz, HistoryQuiz, Pelajar, Pertanyaan } = require('../models');
+const { DetailHistoryQuiz, HistoryQuiz, Pelajar, Pertanyaan, Jawaban } = require('../models');
+
+const getAllDetailHistQuizByHistQuizID = async (req,res) => {
+    try {
+        const { id_history_quiz } = req.params;
+        const historyQuizDetails = await DetailHistoryQuiz.findAll({
+            where: { id_history_quiz },
+            include: [
+                {
+                    model: HistoryQuiz,
+                    as: 'history_quiz',
+                    include: [
+                        {
+                            model: Pelajar,
+                            as: 'pelajar',
+                            attributes: ['nama'], // Ambil nama pelajar
+                        },
+                    ],
+                    attributes: ['nilai'], // Ambil nilai quiz
+                },
+                {
+                    model: Pertanyaan,
+                    as: 'pertanyaan',
+                },
+                {
+                    model: Jawaban,
+                    as: 'jawaban',
+                }
+            ],
+        });
+        res.status(200).json(historyQuizDetails);
+    } catch (error) {
+        console.error('Error fetching history quiz details:', error);
+        res.status(500).json({ error: 'Failed to fetch history quiz details' });
+    }
+};
 
 const getDetailHistoryQuizData = async (req, res) => {
     try {
@@ -59,6 +94,36 @@ const getDetailHistoryQuizData = async (req, res) => {
     }
 }
 
+const upsertDetailHistoryQuiz = async (req, res) => {
+    try {
+        const { id_history_quiz, id_pertanyaan, id_jawaban, jawaban_text, status } = req.body;
+
+        if (!id_history_quiz || !id_pertanyaan) {
+            return res.status(400).json({ error: 'id_history_quiz dan id_pertanyaan wajib diisi' });
+        }
+
+        const [detailHistoryQuiz, created] = await DetailHistoryQuiz.findOrCreate({
+            where: { id_history_quiz, id_pertanyaan },
+            defaults: { id_jawaban, jawaban_text, status },
+        });
+
+        if (!created) {
+            // Jika sudah ada, update datanya
+            await detailHistoryQuiz.update({ id_jawaban, jawaban_text, status });
+        }
+
+        res.json({
+            message: created ? 'DetailHistoryQuiz created successfully' : 'DetailHistoryQuiz updated successfully',
+            data: detailHistoryQuiz,
+        });
+    } catch (error) {
+        console.error('Error upserting detail history quiz:', error);
+        res.status(500).json({ error: 'Failed to upsert detail history quiz' });
+    }
+};
+
 module.exports = {
+    getAllDetailHistQuizByHistQuizID,
     getDetailHistoryQuizData,
+    upsertDetailHistoryQuiz
 };

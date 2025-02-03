@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { UserContext } from "../components/UserContext";
+import { useCourse } from '../components/CourseContext';
 
 const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCProgress }) => {
   const [course, setCourse] = useState({ name: "", items: [] });
@@ -12,12 +13,11 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   const [selectedItem, setSelectedItem] = useState(null);
   const [participant, setParticipant] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
-  const [courseData, setCourseData] = useState({});
   const [isOpen, setIsOpen] = useState(false);
+  const { setCombinedData } = useCourse();
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
-  const incrementalId = useRef(0);
 
   const fetchMateriDanQuiz = async () => {
     if (!activeCourse) return;
@@ -27,7 +27,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
         api.get(`/materials/course/${activeCourse.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        api.get(`/quizzes/`, {
+        api.get(`/quizzes/course/${activeCourse.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -44,19 +44,26 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
         id_quiz: quiz.id_quiz,
         name: quiz.nama_quiz,
         duration: quiz.durasi,
+        desc: quiz.deskripsi_quiz,
         type: "quiz",
       })) || [];
 
       const combinedData = [...mappedMateri, ...mappedQuiz]
-        .sort((a, b) => a.id - b.id_quiz)
-        .map((item, index) => ({ ...item, new_id: index + 1 }));
+        .sort((a, b) => a.id - b.id_quiz) // Pastikan urutan tetap
+        .map((item, index) => ({ ...item, new_id: index+1 }));
 
       setCourse((prevCourse) => ({
         ...prevCourse,
         items: combinedData,
       }));
 
-      if (combinedData.length > 0) {
+      const lastOpenedItem = localStorage.getItem(`lastOpenedItem-${id}`);
+      const foundItem = combinedData.find((item) => item.new_id === Number(lastOpenedItem));
+
+      if (foundItem) {
+        setSelectedItem(foundItem.new_id);
+        onMateriChange(foundItem);
+      } else if (combinedData.length > 0) {
         setSelectedItem(combinedData[0].new_id);
         onMateriChange(combinedData[0]);
       }
@@ -92,9 +99,12 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
 
       setParticipant(mappedCourses);
 
-      if (mappedCourses.length > 0) {
-        setActiveCourse(mappedCourses[0]);
-        onCourseChange(mappedCourses[0]);
+      const matchingCourse = mappedCourses.find((course) => course.id === Number(id));
+      if (matchingCourse) {
+        setActiveCourse(matchingCourse);
+        onCourseChange(matchingCourse);
+      } else {
+        setActiveCourse(null); // Kosongkan jika tidak ada yang cocok
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -102,11 +112,20 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
   };
 
   useEffect(() => {
-    if (activeCourse) {
+    if (course.items.length > 0) {
+      setCombinedData(course.items);
+    }
+  }, [course.items, setCombinedData]);  
+
+  useEffect(() => {
+    if (activeCourse && activeCourse.id === Number(id)) {
       updateCProgress(activeCourse.id, activeCourse.progress);
       fetchMateriDanQuiz();
+    } else {
+      setCourse({ name: "", items: [] }); // Kosongkan materi dan quiz jika course tidak sesuai
+      setCombinedData([]);
     }
-  }, [activeCourse]);
+  }, [activeCourse, id]);  
 
   useEffect(() => {
     if (activeMateri) {
@@ -121,9 +140,10 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
     }
   }, [id]);
 
-  const handleMateriClick = (item) => {
+  const handleClick = (item) => {
     setSelectedItem(item.new_id);
     onMateriChange(item);
+    localStorage.setItem(`lastOpenedItem-${id}`, item.new_id);
   };
 
   return (
@@ -172,7 +192,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
                       className={`learn-list-item d-flex align-items-center ${
                         selectedItem === item.new_id ? "active" : ""
                       }`}
-                      onClick={() => handleMateriClick(item)}
+                      onClick={() => handleClick(item)}
                       style={{ cursor: "pointer" }}
                     >
                       <span className="icon ms-3 me-3">
@@ -188,7 +208,7 @@ const SidebarPelajar = ({ onMateriChange, activeMateri, onCourseChange, updateCP
                 </ul>
               </>
             ) : (
-              <p>No active course available.</p>
+              <p>No course available.</p>
             )}
           </div>
         </div>

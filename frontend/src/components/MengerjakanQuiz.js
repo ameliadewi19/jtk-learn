@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useContext, use } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import api from "../services/api";
 import Swal from "sweetalert2";
-import { UserContext } from "../components/UserContext";
+import { UserContext } from "./UserContext";
+import { useQuiz } from "./QuizContext";
 
-const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
+const MengerjakanQuiz = ({ quizData, onSubmitQuiz, isReviewMode, onBackToQuizResult }) => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [correctAnswersMap, setCorrectAnswersMap] = useState({});
+  const { results, setResults } = useQuiz();
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState((quizData?.duration || 0) * 60);
   const [startTime, setStartTime] = useState(null);
@@ -54,11 +57,10 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
       });
       const questionsData = soalResponse.data;
   
-      // Peta data pertanyaan dan jawaban ke format yang diinginkan
       const mappedQuestions = questionsData.pertanyaan.map((pertanyaan, index) => ({
         ...pertanyaan,
-        id_pertanyaan: index + 1, // Buat id unik untuk setiap pertanyaan
-        jawaban: questionsData.jawaban[index] || [], // Ambil jawaban sesuai urutan
+        id_pertanyaan: index + 1,
+        jawaban: questionsData.jawaban[index] || [],
       }));
   
       setQuestions(mappedQuestions);
@@ -82,8 +84,66 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
     setStartTime(startTime);
   }, []);
   
+  const fetchHistoryDetails = async () => {
+    if (isReviewMode && quizData?.id_history_quiz) {
+      try {
+        const response = await api.get(`/detail-history-quiz/${quizData.id_history_quiz}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        const mappedResults = response.data.reduce((acc, detail) => {
+          acc[detail.id_pertanyaan] = detail.id_jawaban || detail.jawaban_text || "";
+          return acc;
+        }, {});
+
+        setResults(mappedResults);
+        console.log("Jawaban dari history:", mappedResults);
+      } catch (error) {
+        console.error("Error fetching history details:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchHistoryDetails();
+  }, [fetchHistoryDetails]);
+
+  useEffect(() => {
+    const fetchAnswersdb = async () => {
+      console.log("Fetching answersdb...");
+      try {
+        const response = await api.get("/answers/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        const correctMap = response.data.reduce((acc, answer) => {
+          if (!acc[answer.id_pertanyaan]) {
+            acc[answer.id_pertanyaan] = [];
+          }
+          acc[answer.id_pertanyaan].push({
+            id_jawaban: answer.id_jawaban,
+            konten_jawaban: answer.konten_jawaban
+          });
+          return acc;
+        }, {});        
+  
+        console.log("Correct Answers Map:", correctMap);
+        setCorrectAnswersMap(correctMap);
+      } catch (err) {
+        console.error("Error fetching answers:", err);
+      }
+    };
+  
+    if (token) {
+      fetchAnswersdb();
+    }
+  }, [token]);  
+  
   const calculateScore = (question, userAnswer) => {
     let score = 0;
+    let correct = false;
   
     switch (question.jenis_pertanyaan) {
       case "pilihan_ganda":
@@ -91,12 +151,10 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
           (jawaban) => jawaban.status_jawaban === "benar"
         );
 
-        console.log('apa coba correctOptionnya:', correctOption)
-
         if (correctOption?.nama_jawaban === userAnswer) {
           score = 25;
+          correct = true;
         }
-        console.log('score saat ini:', score)
         break;
   
       case "jawaban_singkat":
@@ -108,6 +166,7 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
             userAnswer.toLowerCase()
           ) {
             score = 40;
+            correct = true;
           }
           break;
   
@@ -119,13 +178,14 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
             parseFloat(correctMathAnswer?.konten_jawaban) === parseFloat(userAnswer)
           ) {
             score = 35;
+            correct = true;
           }
           break;
   
       default:
         break;
     }
-    return score;
+    return { score, correct };
   };
   
   const handleSubmit = async (e) => {
@@ -148,28 +208,24 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
       setLoading(true);
       const hasil = [];
       let totalScore = 0;
-  
-      // Waktu mulai dan selesai kuis
-      const waktuMulai = new Date(startTime).toISOString(); 
+      let correctCount = 0;
+      const waktuMulai = new Date(startTime).toISOString();
       const waktuSelesai = new Date().toISOString();
   
-      questions.forEach((question) => {
-        const userAnswer = answers[question.id_pertanyaan]; // Ambil jawaban user untuk pertanyaan ini
-        console.log('isi userAnswer:', userAnswer);
-      
-        const questionScore = calculateScore(question, userAnswer); // Hitung skor untuk pertanyaan ini
-      
-        totalScore += questionScore; // Tambahkan skor ke total skor
-      
-        hasil.push({
-          id_pertanyaan: question.id_pertanyaan, // ID pertanyaan
-          jawaban_user: userAnswer, // Jawaban pengguna
-          nilai: questionScore, // Skor untuk pertanyaan ini
-          benar: questionScore > 0, // Benar jika skornya lebih dari 0
-        });
-      });
+      for (const question of questions) {
+        const userAnswer = answers[question.id_pertanyaan];
+        const { score, correct } = calculateScore(question, userAnswer);
+        totalScore += score;
+        if (correct) correctCount++;
   
-      // Simpan hasil kuis (PUT atau POST)
+        hasil.push({
+          id_pertanyaan: question.id_pertanyaan,
+          jawaban_user: userAnswer,
+          nilai: score,
+          benar: correct,
+        });
+      }
+
       const historyPayload = {
         id_quiz: quizData.id_quiz,
         id_pelajar: user.userData.id_pelajar,
@@ -178,10 +234,8 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
         nilai: totalScore,
       };
   
-      console.log("Payload being sent:", historyPayload);
-
       await api.put(
-        `/quizzes/${user.userData.id_pelajar}/${quizData.id_quiz}`,
+        `/history-quiz/${user.userData.id_pelajar}/${quizData.id_quiz}`,
         historyPayload,
         {
           headers: {
@@ -189,16 +243,45 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
           },
         }
       );
+
+      const historyResponse = 
+        await api.get(`/history-quiz/${user.userData.id_pelajar}/${quizData.id_quiz}/${totalScore}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });      
   
-      // Tampilkan skor kepada pengguna
-      Swal.fire({
-        title: "Quiz Selesai!",
-        text: `Skor Anda: ${totalScore}`,
-        icon: "success",
-      });
+      const id_history_quiz = historyResponse.data.id_history_quiz;
+      quizData.id_history_quiz = id_history_quiz;
   
-      // Kirim hasil ke parent jika diperlukan
-      onSubmitQuiz(hasil);
+      if (!id_history_quiz) {
+        throw new Error("Gagal mendapatkan id_history_quiz.");
+      }
+  
+      for (const question of questions) {
+        const userAnswer = answers[question.id_pertanyaan];
+        const { score, correct } = calculateScore(question, userAnswer);
+  
+        const selectedAnswer = question.jawaban.find(
+          (jawaban) => jawaban.nama_jawaban === userAnswer
+        );
+  
+        const detailHistoryPayload = {
+          id_history_quiz: id_history_quiz,
+          id_pertanyaan: question.id_pertanyaan,
+          id_jawaban: selectedAnswer ? selectedAnswer.id_jawaban : null,
+          jawaban_text: question.jenis_pertanyaan !== "pilihan_ganda" ? userAnswer : null,
+          status: correct ? "benar" : "salah",
+        };
+  
+        await api.put("/detail-history-quiz/detail", detailHistoryPayload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+      onSubmitQuiz({ hasil, nilai: totalScore, benar: correctCount });
+  
     } catch (error) {
       console.error("Error submitting quiz:", error);
       Swal.fire({
@@ -209,10 +292,161 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
     } finally {
       setLoading(false);
     }
-  };  
+  };    
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if(isReviewMode){
+    return (
+    <div
+      className="quiz-container p-4"
+      style={{
+        width: "100%",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        position: "relative",
+      }}
+    >
+
+      <form>
+        {questions.map((question, index) => {
+          const correctAnswers = correctAnswersMap[question.id_pertanyaan] || [];
+          const correctAnswerIds = correctAnswers.map(answer => answer.id_jawaban);
+          const correctAnswerCon = correctAnswers.map(answer => answer.konten_jawaban);
+          const userAnswers = results[question.id_pertanyaan] || [];
+          console.log("isi userAnswers:", userAnswers);
+          return (
+            <div
+              key={question.id_pertanyaan}
+              className={`mb-4 p-3 question-box`}
+            >
+              <h5><b>Soal {index + 1}</b></h5>
+              <p>{question.konten_pertanyaan}</p>
+
+              {question.jenis_pertanyaan === "pilihan_ganda" && (
+                <div>
+                  {question.jawaban.map((option, optIndex) => {
+                    const isCorrect = correctAnswerIds.includes(option.id_jawaban);
+                    const isUserAnswer = userAnswers === option.id_jawaban;
+                    const isIncorrect = isUserAnswer && !isCorrect; // Cek apakah jawaban pengguna salah
+
+                    return (
+                      <div
+                        key={optIndex}
+                        className={`form-check ${isCorrect ? "border-success" : ""} ${isIncorrect ? "border-unsuccess" : ""}`}
+                      >
+                        <input
+                          type="radio"
+                          id={`question-${question.id_pertanyaan}-option-${optIndex}`}
+                          name={`question-${question.id_pertanyaan}`}
+                          className="form-check-input custom-radio"
+                          value={option.id_jawaban}
+                          checked={isUserAnswer}
+                          disabled
+                        />
+                        <div className="d-flex justify-content-between align-items-center">
+                          <label
+                            htmlFor={`question-${question.id_pertanyaan}-option-${optIndex}`}
+                            className="form-check-label"
+                          >
+                            {option.konten_jawaban}
+                          </label>
+
+                          {isUserAnswer && isCorrect && (
+                            <span className="ms-2 text-end d-block">
+                              <span style={{ color: "black" }}>Your Answer:</span> 
+                              <span className="text-success"> Correct</span>
+                            </span>
+                          )}
+
+                          {isIncorrect && (
+                            <span className="ms-2 text-end d-block">
+                              <span style={{ color: "black" }}>Your Answer:</span> 
+                              <span className="text-unsuccess"> Incorrect</span>
+                            </span>
+                          )}
+
+                          {isCorrect && !isUserAnswer && (
+                            <span className="ms-2 text-end d-block">
+                              <span style={{ color: "black" }}>Correct Answer</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+
+              {question.jenis_pertanyaan === "jawaban_singkat" && (
+                <div className="d-flex align-items-center">
+                  <input
+                    type="text"
+                    className="custom-input"
+                    placeholder="Answer"
+                    value={userAnswers}
+                    disabled
+                  />
+                  {correctAnswerCon.includes(userAnswers)? (
+                    <span className="ms-3">
+                      <span style={{ color: "black" }}>Your Answer:</span> 
+                      <span className="text-success"> Correct</span>
+                    </span>
+                  ):(
+                    <>
+                      <span className="ms-3">
+                        <span style={{ color: "black"}}>Your Answer:</span> 
+                        <span className="text-unsuccess"> Incorrect</span>
+                      </span>
+                      <span className="ms-5">
+                        <span style={{ color: "black" }}>Correct Answer: {correctAnswerCon.join(", ")}</span> 
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {question.jenis_pertanyaan === "operasi_matematika" && (
+                <div className="d-flex align-items-center">
+                  <input
+                    type="number"
+                    className="custom-input"
+                    placeholder="Answer"
+                    value={userAnswers}
+                    disabled
+                  />
+                  {correctAnswerCon.includes(userAnswers)? (
+                    <span className="ms-3">
+                      <span style={{ color: "black" }}>Your Answer:</span> 
+                      <span className="text-success"> Correct</span>
+                    </span>
+                  ):(
+                    <>
+                      <span className="ms-3">
+                        <span style={{ color: "black", gap:"5px" }}>Your Answer:</span> 
+                        <span className="text-unsuccess"> Incorrect</span>
+                      </span>
+                      <span className="ms-5">
+                        <span style={{ color: "black" }}>Correct Answer: {correctAnswerCon.join(", ")}</span> 
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <div className="submit-container">
+          <button className="custom-btn" onClick={onBackToQuizResult}>
+            See Result
+          </button>
+        </div>
+      </form>
+    </div>
+  );
   }
 
   return (
@@ -261,7 +495,6 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
               </div>
             )}
 
-            {/* Short Answer */}
             {question.jenis_pertanyaan === "jawaban_singkat" && (
               <input
                 type="text"
@@ -274,7 +507,6 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz }) => {
               />
             )}
 
-            {/* Math Input */}
             {question.jenis_pertanyaan === "operasi_matematika" && (
               <input
                 type="number"

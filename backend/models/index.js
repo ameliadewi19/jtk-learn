@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection'); // Pastikan path sudah sesuai
-const historyQuiz = require('./historyQuiz');
 
 // Import semua model
 const User = require('./user')(sequelize, DataTypes);
@@ -23,7 +22,7 @@ const models = {
   Materi, Quiz, 
   CourseParticipant, 
   Pertanyaan, Jawaban,
-  HistoryQuiz, HistoryMateri, DetailHistoryQuiz,
+  HistoryQuiz, HistoryMateri, DetailHistoryQuiz
 };
 
 // Panggil method `associate` pada setiap model jika ada

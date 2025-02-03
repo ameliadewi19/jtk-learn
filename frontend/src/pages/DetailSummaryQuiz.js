@@ -3,7 +3,6 @@ import { useLocation, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const DetailSummaryQuiz = () => {
     const location = useLocation();

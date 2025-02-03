@@ -1,5 +1,10 @@
 const express = require('express');
-const { getCParticipantByStudent, getProgressByCourse, enrollCourse, updateParticipant } = require('../controllers/participantController');
+const { 
+        getCParticipantByStudent, 
+        getProgressByCourse, 
+        enrollCourse, 
+        updateParticipant 
+    } = require('../controllers/participantController');
 const { verifyEnrollment } = require('../middleware/verifyEnrollment');
 const router = express.Router();
 

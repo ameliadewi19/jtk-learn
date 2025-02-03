@@ -4,7 +4,6 @@ import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 import { UserContext } from '../components/UserContext';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const SummaryQuiz = () => {
   const [quizList, setQuizList] = useState([]);

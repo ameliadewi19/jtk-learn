@@ -5,8 +5,7 @@ const {
     updateMateri, 
     deleteMateri,
     getMateriById,
-    createHistoryMateri,
-    updateHistoryMateri 
+    upsertHistoryMateri 
 } = require('../controllers/materiController');
 const router = express.Router();
 const uploadMaterial = require('../middleware/uploadMaterial');
@@ -17,7 +16,6 @@ router.post('/', uploadMaterial.single('konten_materi'), createMateri); // Creat
 router.put('/:id', uploadMaterial.single('konten_materi'), updateMateri); // Update materi by ID
 router.delete('/:id', deleteMateri); // Delete materi by ID
 router.get('/:id', getMateriById); // Get materi by ID
-router.post('/',createHistoryMateri);
-router.put('/:id', updateHistoryMateri);
+router.put('/:id_pelajar/:id_materi',upsertHistoryMateri); //update, create if not exist
 
 module.exports = router;

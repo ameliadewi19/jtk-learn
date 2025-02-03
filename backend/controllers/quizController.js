@@ -1,4 +1,4 @@
-const { Quiz, Pertanyaan, Jawaban, Course, sequelize, HistoryQuiz } = require('../models');
+const { Quiz, Pertanyaan, Jawaban, Course, sequelize } = require('../models');
 const { getAllPertanyaan, createPertanyaan, updatePertanyaan } = require('./pertanyaanController');
 const { getJawabanByIdPertanyaan, createJawaban, updateJawaban } = require('./jawabanController');
 
@@ -88,6 +88,7 @@ const getQuizById = async (req, res) => {
             })),
             jawaban: jawaban.map((jawabanList) =>
                 jawabanList.map((jawabanItem) => ({
+                    id_jawaban: jawabanItem.id_jawaban,
                     nama_jawaban: jawabanItem.nama_jawaban,
                     konten_jawaban: jawabanItem.konten_jawaban,
                     status_jawaban: jawabanItem.status_jawaban,
@@ -223,75 +224,6 @@ const deleteQuiz = async (req, res) => {
     }
 };
 
-// Get history quiz by ID
-const getHistoryQuizByID = async (req, res) => {
-  try {
-    const { id_pelajar, id_quiz } = req.params;
-    const history = await HistoryQuiz.findAll({
-      where: {id_pelajar, id_quiz},
-      include: [
-        {
-          model: Quiz,
-          as: 'quiz',
-        },
-        {
-          model: Pelajar,
-          as: 'pelajar'
-        }
-      ],
-    });
-
-    if (!history || history.length === 0) {
-      return res.status(404).json({ message: 'No answers found for the specified question ID.' });
-    }
-
-    res.status(200).json(history);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const upsertHistoryQuiz = async (req, res) => {
-  try {
-    const { id_pelajar, id_quiz } = req.params;
-    const { waktu_mulai, waktu_selesai, nilai } = req.body;
-
-    // Debug log untuk payload
-    console.log("Received payload:", req.body);
-    
-    let historyQuiz = await HistoryQuiz.findOne({
-      where: { id_pelajar, id_quiz },
-    });
-
-    if (historyQuiz) {
-      // Jika sudah ada, lakukan update
-      await historyQuiz.update({ waktu_mulai, waktu_selesai, nilai });
-
-      return res.status(200).json({
-        message: "HistoryQuiz updated successfully.",
-        data: historyQuiz,
-      });
-    } else {
-      // Jika tidak ada, buat resource baru
-      historyQuiz = await HistoryQuiz.create({
-        id_quiz,
-        id_pelajar,
-        waktu_mulai,
-        waktu_selesai,
-        nilai,
-      });
-
-      return res.status(201).json({
-        message: "HistoryQuiz created successfully.",
-        data: historyQuiz,
-      });
-    }
-  } catch (error) {
-    console.error("Error in upsertHistoryQuiz:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
 
 module.exports = { 
     getAllQuiz, 
@@ -300,7 +232,5 @@ module.exports = {
     getQuizById, 
     createQuiz, 
     updateQuiz, 
-    deleteQuiz,
-    getHistoryQuizByID,
-    upsertHistoryQuiz 
+    deleteQuiz
 };
