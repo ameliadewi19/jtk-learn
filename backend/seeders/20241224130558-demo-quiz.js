@@ -32,22 +32,6 @@ module.exports = {
         durasi: 30,
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
-      {
-        id_course: 1,
-        nama_quiz: 'CSS',
-        deskripsi_quiz: 'Quiz tentang CSS',
-        durasi: 30,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id_course: 1,
-        nama_quiz: 'JavaScript',
-        deskripsi_quiz: 'Quiz tentang JavaScript',
-        durasi: 40,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       }
     ]);
   },

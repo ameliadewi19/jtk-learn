@@ -129,6 +129,29 @@ const MempelajariCoursePage = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchHistoryQuizByID = async () => {
+      try {
+        const response = await api.get(`/history-quiz/${user.userData.id_pelajar}/${activeMateri.id_quiz}`,{
+          headers: {Authorization: `Bearer ${token}`},
+        });
+        const completedData = response.data || [];
+        const quizMap = {};
+  
+        completedData.forEach((quiz) => {
+          quizMap[quiz.id_quiz] = {
+            totalScore: quiz.nilai,
+          };
+        });
+  
+        setCompletedQuizzes(completedData.map((quiz) => quiz.id_quiz));
+      } catch (error) {
+        
+      }
+    }
+    fetchHistoryQuizByID();
+  })
+
   const isFirstMateri = activeMateri?.new_id === 1;
   const isLastMateri = activeMateri?.new_id === combinedData?.length;
 

@@ -390,7 +390,7 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz, isReviewMode, onBackToQuizRes
                     value={userAnswers}
                     disabled
                   />
-                  {correctAnswerCon.includes(userAnswers)? (
+                  {correctAnswerCon.some(correctAnswer => correctAnswer.toLowerCase() === userAnswers.toLowerCase()) ? (
                     <span className="ms-3">
                       <span style={{ color: "black" }}>Your Answer:</span> 
                       <span className="text-success"> Correct</span>
