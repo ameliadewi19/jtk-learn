@@ -36,7 +36,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
         e.preventDefault();
         const formData = {
             id_quiz: initialData?.id_quiz,
-            id_course: 1,
+            id_course: initialData?.id_course,
             nama_quiz: quizName,
             deskripsi_quiz: description,
             durasi: duration,
