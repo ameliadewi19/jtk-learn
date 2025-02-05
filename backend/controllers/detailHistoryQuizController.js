@@ -51,7 +51,7 @@ const getDetailHistoryQuizData = async (req, res) => {
                             attributes: ['nama'], // Get the student name
                         },
                     ],
-                    attributes: ['nilai'], // Get the total grades
+                    attributes: ['id_history_quiz', 'nilai'], // Get the total grades
                 },
                 {
                     model: Pertanyaan,
@@ -59,12 +59,13 @@ const getDetailHistoryQuizData = async (req, res) => {
                     attributes: ['jenis_pertanyaan'], // Get the question type
                 },
             ],
-            attributes: ['status'], // Get the status
+            attributes: ['id_history_quiz', 'status'], // Get the status
         });
 
         // Transform the data into the desired structure
         const transformedData = detailHistoryQuizData.reduce((acc, item) => {
             const studentName = item.history_quiz.pelajar.nama;
+            const idHistoryQuiz = item.id_history_quiz;
             const nilai = item.history_quiz.nilai;
             const jenisPertanyaan = item.pertanyaan.jenis_pertanyaan;
             const status = item.status;
@@ -74,15 +75,29 @@ const getDetailHistoryQuizData = async (req, res) => {
                 student = {
                     student_name: studentName,
                     nilai: nilai,
-                    detail: []
+                    history_quiz: []
                 };
                 acc.push(student);
             }
 
-            student.detail.push({
+            let history = student.history_quiz.find(h => h.id_history_quiz === idHistoryQuiz);
+            if (!history) {
+                history = {
+                    id_history_quiz: idHistoryQuiz,
+                    correct_count: 0, // Inisialisasi jumlah status 'benar'
+                    detail: []
+                };
+                student.history_quiz.push(history);
+            }
+
+            history.detail.push({
                 jenis_pertanyaan: jenisPertanyaan,
                 status: status
             });
+
+            if (status === "benar") {
+                history.correct_count += 1;
+            }
 
             return acc;
         }, []);

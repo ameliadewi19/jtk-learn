@@ -16,6 +16,7 @@ import SummaryQuiz from "./pages/SummaryQuiz";
 import DetailSummaryQuiz from "./pages/DetailSummaryQuiz";
 import MyCoursesPage from "./pages/MyCoursesPage";
 import HistoryQuiz from './pages/HistoryQuizPage';
+import QuizResult from "./components/QuizResult";
 
 function App() {
   return (
@@ -37,14 +38,6 @@ function App() {
                         element={
                           <ProtectedRoute allowedRoles={['pelajar']}>
                             <DashboardPelajar />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/learn-course/:id"
-                        element={
-                          <ProtectedRoute allowedRoles={['pelajar']}>
-                            <MempelajariCoursePage />
                           </ProtectedRoute>
                         }
                       />
@@ -117,6 +110,22 @@ function App() {
                         element={
                           <ProtectedRoute allowedRoles={['pelajar']}>
                             <HistoryQuiz />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/learn-course/:id"
+                        element={
+                          <ProtectedRoute allowedRoles={['pelajar']}>
+                            <MempelajariCoursePage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/quiz-result/:id"
+                        element={
+                          <ProtectedRoute allowedRoles={['pelajar']}>
+                            <QuizResult />
                           </ProtectedRoute>
                         }
                       />
