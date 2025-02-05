@@ -17,7 +17,7 @@ const DetailSummaryQuiz = () => {
 
     const fetchResultsList = async () => {
         try {
-            const response = await api.get(`/detail-history-quiz/${id}`, {
+            const response = await api.get(`/detail-history-quiz/data/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
