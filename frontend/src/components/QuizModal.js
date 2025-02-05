@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Accordion, Card, Dropdown } from "react-bootstrap";
 import { FaGripVertical } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
 
 const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
+    const { id } = useParams();
     const [quizName, setQuizName] = useState('');
     const [description, setDescription] = useState('');
     const [duration, setDuration] = useState('');
@@ -36,7 +38,7 @@ const QuizModal = ({ show, onClose, onSubmit, initialData }) => {
         e.preventDefault();
         const formData = {
             id_quiz: initialData?.id_quiz,
-            id_course: initialData?.id_course,
+            id_course: id,
             nama_quiz: quizName,
             deskripsi_quiz: description,
             durasi: duration,
