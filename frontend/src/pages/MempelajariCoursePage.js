@@ -27,6 +27,7 @@ const MempelajariCoursePage = () => {
   const { user } = useContext(UserContext);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const [isRetake, setRetakle] = useState(false);
   const { id } = useParams();
 
   const [searchParams] = useSearchParams();
@@ -63,6 +64,11 @@ const MempelajariCoursePage = () => {
     setIsStartQuizMode(false);
     setQuizCompleted(false);
 
+    // flushSync(() => {
+    //     setActiveMateri(materi);
+    // });
+
+    // navigate(/learn-course/${id}, {replace: true});
 
     if (materi?.type === "quiz") {
       setIsStartQuizMode(true);
@@ -89,12 +95,16 @@ const MempelajariCoursePage = () => {
 
     setIsQuizMode(false);
 
+    // *Hitung progres berdasarkan jumlah materi dalam kursus*
     if (activeCourse && combinedData) {
       const totalMateri = combinedData.length; // Total materi dalam kursus (termasuk kuis)
       const persentasePerMateri = 100 / totalMateri; // Setiap materi menyumbang sekian persen dari total kursus
       const increment = persentasePerMateri;
       const newProgress = Math.min(activeCourse.progress + increment, 100);
-      updateProgress(newProgress);
+      if (!isRetake) {
+        updateProgress(newProgress);
+        setRetakle(false)
+      }
     }
   };
 
@@ -295,6 +305,7 @@ const MempelajariCoursePage = () => {
     setIsStartQuizMode(false);
     setQuizCompleted(false);
     setTotalScore(0);
+    setRetakle(true);
     setCorrectAnswers(0);
     setCompletedQuizzes((prev) =>
       prev.filter((id) => id !== activeMateri.id_quiz)
