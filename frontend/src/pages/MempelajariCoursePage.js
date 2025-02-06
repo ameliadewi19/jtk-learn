@@ -57,22 +57,20 @@ const MempelajariCoursePage = () => {
   }, [id, mode, combinedData]);
 
   const handleMateriChange = (materi) => {
-    // Reset semua state yang bisa mempengaruhi tampilan quiz/result
     setActiveMateri(materi); // Reset sebelum diubah ke materi baru
     setIsReviewMode(false);
     setIsQuizMode(false);
     setIsStartQuizMode(false);
     setQuizCompleted(false);
 
-    // flushSync(() => {
-    //     setActiveMateri(materi);
-    // });
-
-    // navigate(/learn-course/${id}, {replace: true});
-
-    if (materi?.type === "quiz") {
-      setIsStartQuizMode(true);
+    // Jika klik detail history quiz dari materi atau quiz
+    if (id_quiz) {
+        navigate(`/learn-course/${id}?id_quiz=${id_quiz}`, { replace: true });
+        return;
     }
+
+    // Default: tetap di halaman /learn-course/${id}
+    navigate(`/learn-course/${id}`, { replace: true });
   };
 
   const handleQuizSubmit = ({ hasil, nilai, benar, totalSoal }) => {
@@ -211,6 +209,7 @@ const MempelajariCoursePage = () => {
         // Update progress ke state dan API
         updateProgress(newProgress);
       }
+      navigate(`/learn-course/${id}`, { replace: true });
     }
   };
 
@@ -232,6 +231,7 @@ const MempelajariCoursePage = () => {
       setQuizCompleted(false);
       setIsStartQuizMode(prevMateri.type === "quiz");
       setIsQuizMode(false);
+      navigate(`/learn-course/${id}`, { replace: true });
     }
   };
 

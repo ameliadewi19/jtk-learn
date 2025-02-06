@@ -401,7 +401,7 @@ const MengerjakanQuiz = ({
                             type="radio"
                             id={`question-${question.id_pertanyaan}-option-${optIndex}`}
                             name={`question-${question.id_pertanyaan}`}
-                            className="form-check-input custom-radio"
+                            className="form-check-input input-quiz-radio"
                             value={option.id_jawaban}
                             checked={isUserAnswer}
                             disabled
@@ -453,7 +453,7 @@ const MengerjakanQuiz = ({
                   <div className="d-flex align-items-center">
                     <input
                       type="text"
-                      className="custom-input"
+                      className="input-quiz-text"
                       placeholder="Answer"
                       value={userAnswers}
                       disabled
@@ -487,7 +487,7 @@ const MengerjakanQuiz = ({
                   <div className="d-flex align-items-center">
                     <input
                       type="number"
-                      className="custom-input"
+                      className="input-quiz-number"
                       placeholder="Answer"
                       value={userAnswers}
                       disabled
@@ -560,7 +560,7 @@ const MengerjakanQuiz = ({
                         `${question.id_pertanyaan}-option-${optIndex}`
                       }
                       name={question - `${question.id_pertanyaan}`}
-                      className="form-check-input custom-radio"
+                      className="form-check-input input-quiz-radio"
                       value={option.nama_jawaban}
                       checked={
                         answers[question.id_pertanyaan] === option.nama_jawaban
@@ -589,7 +589,7 @@ const MengerjakanQuiz = ({
             {question.jenis_pertanyaan === "jawaban_singkat" && (
               <input
                 type="text"
-                className="custom-input"
+                className="input-quiz-text"
                 placeholder="Answer"
                 value={answers[question.id_pertanyaan] || ""}
                 onChange={(e) =>
@@ -601,7 +601,7 @@ const MengerjakanQuiz = ({
             {question.jenis_pertanyaan === "operasi_matematika" && (
               <input
                 type="number"
-                className="custom-input"
+                className="input-quiz-number"
                 placeholder="Answer"
                 value={answers[question.id_pertanyaan] || ""}
                 onChange={(e) =>
