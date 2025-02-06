@@ -1,90 +1,95 @@
-const { sequelize, HistoryQuiz, Quiz, Course, Pelajar } = require('../models'); 
-const { Op, col, fn, literal } = require('sequelize');
+const { sequelize, HistoryQuiz, Quiz, Course, Pelajar } = require("../models");
+const { Op, col, fn, literal } = require("sequelize");
 
 const getAllHistoryQuiz = async (req, res) => {
   try {
-      const { id_pelajar } = req.params;
+    const { id_pelajar } = req.params;
 
-      const historyQuizData = await HistoryQuiz.findAll({
-          where: {
-              id_pelajar: parseInt(id_pelajar),
-              id_history_quiz: {
-                  [Op.eq]: literal(`
-                      (SELECT id_history_quiz FROM "historyQuiz" AS sub_hq
-                       WHERE sub_hq.id_quiz = "HistoryQuiz".id_quiz
-                       ORDER BY sub_hq.nilai DESC, sub_hq.waktu_selesai DESC
-                       LIMIT 1)
-                  `),
-              },
+    const historyQuizData = await HistoryQuiz.findAll({
+      where: {
+        id_pelajar: parseInt(id_pelajar),
+        id_history_quiz: {
+          [Op.eq]: literal(`
+                    (SELECT id_history_quiz FROM "historyQuiz" AS sub_hq
+                     WHERE sub_hq.id_quiz = "HistoryQuiz".id_quiz
+                     AND sub_hq.id_pelajar = "HistoryQuiz".id_pelajar
+                     ORDER BY sub_hq.nilai DESC, sub_hq.waktu_selesai DESC
+                     LIMIT 1)
+                `),
+        },
+      },
+      attributes: [
+        "id_history_quiz",
+        "id_pelajar",
+        "id_quiz",
+        "waktu_mulai",
+        "waktu_selesai",
+        "nilai",
+      ],
+      include: [
+        {
+          model: Quiz,
+          as: "quiz",
+          attributes: ["id_quiz", "nama_quiz", "deskripsi_quiz"],
+          include: {
+            model: Course,
+            as: "course",
+            attributes: ["id_course", "nama_course"], // Tambahkan id_course
           },
-          attributes: [
-              'id_history_quiz',
-              'id_pelajar',
-              'id_quiz',
-              'waktu_mulai',
-              'waktu_selesai',
-              'nilai',
-          ],
-          include: [
-              {
-                  model: Quiz,
-                  as: 'quiz',
-                  attributes: ['nama_quiz', 'deskripsi_quiz'],
-                  include: {
-                      model: Course,
-                      as: 'course',
-                      attributes: ['nama_course'],
-                  },
-              },
-          ],
-          order: [['id_quiz', 'ASC']],
-      });
+        },
+      ],
+      order: [["id_quiz", "ASC"]],
+    });
 
-      const result = historyQuizData.map((history) => ({
-          id_history_quiz: history.id_history_quiz,
-          id_pelajar: history.id_pelajar,
-          nama_course: history.quiz.course.nama_course,
-          nama_quiz: history.quiz.nama_quiz,
-          deskripsi_quiz: history.quiz.deskripsi_quiz,
-          waktu_mulai: history.waktu_mulai,
-          waktu_selesai: history.waktu_selesai,
-          nilai: history.nilai,
-      }));
+    const result = historyQuizData.map((history) => ({
+      id_history_quiz: history.id_history_quiz,
+      id_quiz: history.id_quiz,
+      id_pelajar: history.id_pelajar,
+      id_course: history.quiz.course.id_course, // Tambahkan id_course ke hasil JSON
+      nama_course: history.quiz.course.nama_course,
+      nama_quiz: history.quiz.nama_quiz,
+      deskripsi_quiz: history.quiz.deskripsi_quiz,
+      waktu_mulai: history.waktu_mulai,
+      waktu_selesai: history.waktu_selesai,
+      nilai: history.nilai,
+    }));
 
-      res.status(200).json(result);
+    res.status(200).json(result);
   } catch (error) {
-      console.error('Error fetching history quiz:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching history quiz:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 // Get history quiz by ID
 const getHistoryQuizByID = async (req, res) => {
-    try {
-      const { id_pelajar, id_quiz } = req.params;
-      const history = await HistoryQuiz.findAll({
-        where: {id_pelajar, id_quiz},
-        include: [
-          {
-            model: Quiz,
-            as: 'quiz',
-          },
-          {
-            model: Pelajar,
-            as: 'pelajar'
-          }
-        ],
-      });
-  
-      if (!history || history.length === 0) {
-        return res.status(404).json({ message: 'No answers found for the specified question ID.' });
-      }
-  
-      res.status(200).json(history);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+  try {
+    const { id_pelajar, id_quiz } = req.params;
+    const history = await HistoryQuiz.findAll({
+      where: { id_pelajar, id_quiz },
+      include: [
+        {
+          model: Quiz,
+          as: "quiz",
+        },
+        {
+          model: Pelajar,
+          as: "pelajar",
+        },
+      ],
+    });
+
+    if (!history || history.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No answers found for the specified question ID." });
     }
-  };
+
+    res.status(200).json(history);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // Get history quiz by score
 const getHistoryQuizByScore = async (req, res) => {
@@ -116,46 +121,46 @@ const getHistoryQuizByScore = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-  
+
 const upsertHistoryQuiz = async (req, res) => {
-    try {
-      const { id_pelajar, id_quiz } = req.params;
-      const { waktu_mulai, waktu_selesai, nilai } = req.body;
-      
-      let historyQuiz = await HistoryQuiz.findOne({
-        where: { id_pelajar, id_quiz },
+  try {
+    const { id_pelajar, id_quiz } = req.params;
+    const { waktu_mulai, waktu_selesai, nilai } = req.body;
+
+    let historyQuiz = await HistoryQuiz.findOne({
+      where: { id_pelajar, id_quiz },
+    });
+
+    if (historyQuiz) {
+      await historyQuiz.update({ waktu_mulai, waktu_selesai, nilai });
+
+      return res.status(200).json({
+        message: "HistoryQuiz updated successfully.",
+        data: historyQuiz,
       });
-  
-      if (historyQuiz) {
-        await historyQuiz.update({ waktu_mulai, waktu_selesai, nilai });
-  
-        return res.status(200).json({
-          message: "HistoryQuiz updated successfully.",
-          data: historyQuiz,
-        });
-      } else {
-        historyQuiz = await HistoryQuiz.create({
-          id_quiz,
-          id_pelajar,
-          waktu_mulai,
-          waktu_selesai,
-          nilai,
-        });
-  
-        return res.status(201).json({
-          message: "HistoryQuiz created successfully.",
-          data: historyQuiz,
-        });
-      }
-    } catch (error) {
-      console.error("Error in upsertHistoryQuiz:", error);
-      res.status(500).json({ error: error.message });
+    } else {
+      historyQuiz = await HistoryQuiz.create({
+        id_quiz,
+        id_pelajar,
+        waktu_mulai,
+        waktu_selesai,
+        nilai,
+      });
+
+      return res.status(201).json({
+        message: "HistoryQuiz created successfully.",
+        data: historyQuiz,
+      });
     }
+  } catch (error) {
+    console.error("Error in upsertHistoryQuiz:", error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = {
-    getAllHistoryQuiz,
-    getHistoryQuizByID,
-    upsertHistoryQuiz,
-    getHistoryQuizByScore
+  getAllHistoryQuiz,
+  getHistoryQuizByID,
+  upsertHistoryQuiz,
+  getHistoryQuizByScore,
 };

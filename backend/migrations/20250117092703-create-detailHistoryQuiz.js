@@ -64,17 +64,22 @@ module.exports = {
       RETURNS TRIGGER AS $$
       BEGIN
         IF NEW.id_jawaban IS NOT NULL THEN
+          -- Check if the selected jawaban is correct
           IF (SELECT status_jawaban FROM jawaban WHERE id_jawaban = NEW.id_jawaban) = 'benar' THEN
             NEW.status = 'benar';
           ELSE
             NEW.status = 'salah';
           END IF;
-        ELSE
+        ELSIF NEW.jawaban_text IS NOT NULL THEN
+          -- If jawaban_text is provided, check if it is correct
           IF (SELECT konten_jawaban FROM jawaban WHERE konten_jawaban = NEW.jawaban_text AND status_jawaban = 'benar') IS NOT NULL THEN
             NEW.status = 'benar';
           ELSE
             NEW.status = 'salah';
           END IF;
+        ELSE
+          -- If neither id_jawaban nor jawaban_text is provided, set status to 'salah'
+          NEW.status = 'salah';
         END IF;
         RETURN NEW;
       END;
