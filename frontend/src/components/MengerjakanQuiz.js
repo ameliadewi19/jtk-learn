@@ -60,7 +60,7 @@ const MengerjakanQuiz = ({ quizData, onSubmitQuiz, isReviewMode, onBackToQuizRes
       const mappedQuestions = questionsData.pertanyaan.map((pertanyaan, index) => ({
         ...pertanyaan,
         id_pertanyaan: index + 1,
-        jawaban: questionsData.jawaban[index] || [],
+        jawaban: pertanyaan.jawaban || [],
       }));
   
       setQuestions(mappedQuestions);

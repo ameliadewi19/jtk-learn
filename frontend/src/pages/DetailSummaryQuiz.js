@@ -10,8 +10,6 @@ const DetailSummaryQuiz = () => {
     const { quizName, courseName } = location.state || {};
     const [resultsList, setResultsList] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [resultsPerPage] = useState(5);
     const [sortOrder, setSortOrder] = useState('asc');
     const token = localStorage.getItem('token');
 
@@ -35,10 +33,6 @@ const DetailSummaryQuiz = () => {
         fetchResultsList();
     }, []);
 
-    useEffect(() => {
-        fetchResultsList();
-    }, []); // Hanya panggil sekali saat komponen mount
-    
     const sortedResults = [...resultsList].sort((a, b) =>
         sortOrder === 'asc'
             ? a.student_name.localeCompare(b.student_name)
@@ -47,24 +41,6 @@ const DetailSummaryQuiz = () => {
 
     const handleSortChange = (e) => {
         setSortOrder(e.target.value);
-    };
-
-    const indexOfLastResult = currentPage * resultsPerPage;
-    const indexOfFirstResult = indexOfLastResult - resultsPerPage;
-    const currentResults = resultsList.slice(indexOfFirstResult, indexOfLastResult);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const handleNextPage = () => {
-        if (currentPage < Math.ceil(resultsList.length / resultsPerPage)) {
-            setCurrentPage(currentPage + 1);
-        }
     };
 
     const renderIcon = (detail, type) => {
@@ -95,32 +71,30 @@ const DetailSummaryQuiz = () => {
                     {resultsList.length === 0 ? (
                         <p className="text-center">No students have taken the quiz yet</p>
                     ) : (
-                        <>
-                            <table className="custom-result-table">
-                                <thead className="table-gray">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Student Name</th>
-                                        <th>Total Grades</th>
-                                        <th>Q: Pilihan Ganda<br /><span className="points">(25 points)</span></th>
-                                        <th>Q: Jawaban Singkat<br /><span className="points">(40 points)</span></th>
-                                        <th>Q: Operasi Matematika<br /><span className="points">(35 points)</span></th>
+                        <table className="custom-result-table">
+                            <thead className="table-gray">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Student Name</th>
+                                    <th>Grade</th>
+                                    <th>Q1<br /><span className="points">(25 points)</span></th>
+                                    <th>Q2<br /><span className="points">(40 points)</span></th>
+                                    <th>Q3<br /><span className="points">(35 points)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedResults.map((result, index) => (
+                                    <tr key={result.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{result.student_name}</td>
+                                        <td>{result.nilai}</td>
+                                        <td>{renderIcon(result.detail, 'pilihan_ganda')}</td>
+                                        <td>{renderIcon(result.detail, 'jawaban_singkat')}</td>
+                                        <td>{renderIcon(result.detail, 'operasi_matematika')}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {currentResults.map((result, index) => (
-                                        <tr key={result.id}>
-                                            <td>{indexOfFirstResult + index + 1}</td>
-                                            <td>{result.student_name}</td>
-                                            <td>{result.nilai}</td>
-                                            <td>{renderIcon(result.detail, 'pilihan_ganda')}</td>
-                                            <td>{renderIcon(result.detail, 'jawaban_singkat')}</td>
-                                            <td>{renderIcon(result.detail, 'operasi_matematika')}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
                 </div>
             </div>
