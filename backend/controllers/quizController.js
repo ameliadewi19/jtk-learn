@@ -80,20 +80,18 @@ const getQuizById = async (req, res) => {
             nama_quiz: quiz.nama_quiz,
             deskripsi_quiz: quiz.deskripsi_quiz,
             durasi: quiz.durasi,
-            pertanyaan: pertanyaan.map((pertanyaanItem) => ({
+            pertanyaan: pertanyaan.map((pertanyaanItem, index) => ({
                 nama_pertanyaan: pertanyaanItem.nama_pertanyaan,
                 konten_pertanyaan: pertanyaanItem.konten_pertanyaan,
                 jenis_pertanyaan: pertanyaanItem.jenis_pertanyaan,
                 order: pertanyaanItem.order,
-            })),
-            jawaban: jawaban.map((jawabanList) =>
-                jawabanList.map((jawabanItem) => ({
+                jawaban: jawaban[index].map((jawabanItem) => ({
                     id_jawaban: jawabanItem.id_jawaban,
                     nama_jawaban: jawabanItem.nama_jawaban,
                     konten_jawaban: jawabanItem.konten_jawaban,
                     status_jawaban: jawabanItem.status_jawaban,
                 }))
-            ),
+            }))
         };
 
         res.status(200).json(formattedQuiz);
@@ -107,7 +105,7 @@ const getQuizById = async (req, res) => {
 const createQuiz = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
-        const { id_course, nama_quiz, deskripsi_quiz, durasi, pertanyaan, jawaban } = req.body;
+        const { id_course, nama_quiz, deskripsi_quiz, durasi, pertanyaan } = req.body;
 
         console.log(req.body);
 
@@ -121,19 +119,18 @@ const createQuiz = async (req, res) => {
             { transaction }
         );
 
-        // Ambil langsung nilai `order` dari `req.body`
         await Promise.all(
-            pertanyaan.map(async (q, index) => {
+            pertanyaan.map(async (q) => {
                 const question = await createPertanyaan(
                     quiz.id_quiz,
                     q.nama_pertanyaan,
                     q.konten_pertanyaan,
                     q.jenis_pertanyaan,
-                    q.order, // Gunakan nilai order dari req.body
+                    q.order,
                     transaction
                 );
                 await Promise.all(
-                    jawaban[index].map(async (a) => {
+                    q.jawaban.map(async (a) => {
                         await createJawaban(
                             question.id_pertanyaan,
                             a.nama_jawaban,
@@ -155,13 +152,11 @@ const createQuiz = async (req, res) => {
     }
 };
 
-
-// update quiz, pertanyaan, and jawaban
 const updateQuiz = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const { id_course, nama_quiz, deskripsi_quiz, durasi, pertanyaan, jawaban } = req.body;
+        const { id_course, nama_quiz, deskripsi_quiz, durasi, pertanyaan } = req.body;
 
         const quiz = await Quiz.findByPk(id, { transaction });
         if (!quiz) {
@@ -176,24 +171,18 @@ const updateQuiz = async (req, res) => {
         }, { transaction });
 
         const existingQuestions = await Pertanyaan.findAll({ where: { id_quiz: id }, transaction });
-        const questionTypes = ['pilihan_ganda', 'jawaban_singkat', 'operasi_matematika'];
 
-        await Promise.all(questionTypes.map(async (type, i) => {
-            const questionData = pertanyaan.find(q => q.jenis_pertanyaan === type);
-            if (!questionData) {
-                throw new Error(`Missing question of type ${type}`);
-            }
-
-            let question = existingQuestions.find(q => q.jenis_pertanyaan === type);
+        await Promise.all(pertanyaan.map(async (q) => {
+            let question = existingQuestions.find(eq => eq.jenis_pertanyaan === q.jenis_pertanyaan);
             if (question) {
-                await updatePertanyaan(question.id_pertanyaan, questionData.nama_pertanyaan, questionData.konten_pertanyaan, type, transaction);
+                await updatePertanyaan(question.id_pertanyaan, q.nama_pertanyaan, q.konten_pertanyaan, q.jenis_pertanyaan, transaction);
             } else {
-                question = await createPertanyaan(id, questionData.nama_pertanyaan, questionData.konten_pertanyaan, type, transaction);
+                question = await createPertanyaan(id, q.nama_pertanyaan, q.konten_pertanyaan, q.jenis_pertanyaan, transaction);
             }
 
             const existingAnswers = await Jawaban.findAll({ where: { id_pertanyaan: question.id_pertanyaan }, transaction });
 
-            await Promise.all(jawaban[i].map(async (a, j) => {
+            await Promise.all(q.jawaban.map(async (a, j) => {
                 let answer = existingAnswers[j];
                 if (answer) {
                     await updateJawaban(answer.id_jawaban, a.nama_jawaban, a.konten_jawaban, a.status_jawaban, transaction);

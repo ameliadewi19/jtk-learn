@@ -70,10 +70,10 @@ module.exports = {
             NEW.status = 'salah';
           END IF;
         ELSE
-          IF (SELECT konten_jawaban FROM jawaban WHERE konten_jawaban = NEW.jawaban_text AND status_jawaban = 'benar') IS NOT NULL THEN
-            NEW.status = 'benar';
+          IF (SELECT konten_jawaban FROM jawaban WHERE LOWER(konten_jawaban) = LOWER(NEW.jawaban_text) AND status_jawaban = 'benar') IS NOT NULL THEN
+              NEW.status = 'benar';
           ELSE
-            NEW.status = 'salah';
+              NEW.status = 'salah';
           END IF;
         END IF;
         RETURN NEW;
