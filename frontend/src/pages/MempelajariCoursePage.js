@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SidebarPelajar from "../components/SidebarPelajar";
 import MelihatMateri from "../components/MelihatMateri";
@@ -7,11 +7,13 @@ import StartQuiz from "../components/StartQuiz";
 import QuizResult from "../components/QuizResult";
 import api from "../services/api";
 import { UserContext } from "../components/UserContext";
-import { useCourse } from '../components/CourseContext';
+import { useCourse } from "../components/CourseContext";
+import { flushSync } from "react-dom";
+// import { useLocation } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
 const MempelajariCoursePage = () => {
   const [activeMateri, setActiveMateri] = useState(null);
-  const [courseMateri, setCourseMateri] = useState([]);
   const [activeCourse, setActiveCourse] = useState(null);
   const [isStartQuizMode, setIsStartQuizMode] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
@@ -24,32 +26,84 @@ const MempelajariCoursePage = () => {
   const { combinedData } = useCourse();
   const { user } = useContext(UserContext);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const [isRetake, setRetakle] = useState(false);
+  const { id } = useParams();
 
-  const handleMateriChange = (materi) => {
-    setActiveMateri(materi);
-    setQuizCompleted(false);
-    setIsReviewMode(false);
-    if (materi?.type === "quiz") {
-      setIsStartQuizMode(true);
-      setIsQuizMode(false);
-    } else {
-      setIsStartQuizMode(false);
-      setIsQuizMode(false);
+  const [searchParams] = useSearchParams();
+
+  const id_quiz = searchParams.get("id_quiz"); // Get id_quiz from the query string
+  const mode = searchParams.get("mode");
+  // const {id} = useParams();
+
+  const sidebarRef = useRef(null);
+
+  const refreshParticipants = () => {
+    if (sidebarRef.current) {
+      sidebarRef.current.refreshParticipants();
     }
   };
 
-  const handleQuizSubmit = ({ hasil, nilai, benar }) => {
+  // baru
+  useEffect(() => {
+    if (id) {
+      console.log("combined data", combinedData);
+      const quizData = combinedData.find((q) => q.id_quiz === Number(id));
+      if (quizData) {
+        setIsQuizMode(mode === "retake");
+        setIsReviewMode(mode === "review");
+      }
+    }
+  }, [id, mode, combinedData]);
+
+  const handleMateriChange = (materi) => {
+    setActiveMateri(materi); // Reset sebelum diubah ke materi baru
+    setIsReviewMode(false);
+    setIsQuizMode(false);
+    setIsStartQuizMode(false);
+    setQuizCompleted(false);
+
+    // Jika klik detail history quiz dari materi atau quiz
+    if (id_quiz) {
+        navigate(`/learn-course/${id}?id_quiz=${id_quiz}`, { replace: true });
+        return;
+    }
+
+    // Default: tetap di halaman /learn-course/${id}
+    navigate(`/learn-course/${id}`, { replace: true });
+  };
+
+  const handleQuizSubmit = ({ hasil, nilai, benar, totalSoal }) => {
     setTotalScore(nilai);
     setCorrectAnswers(benar);
     setQuizCompleted(true);
-  
+
+    console.log(combinedData);
+
     if (activeMateri.type === "quiz") {
-      setCompletedQuizzes((prevQuizzes) => [...prevQuizzes, activeMateri.id_quiz]);
-      localStorage.setItem(`quizCompleted_${activeMateri.id_quiz}`, JSON.stringify({ totalScore: nilai, correctAnswers: benar }));
-      updateProgress();
+      setCompletedQuizzes((prevQuizzes) => [
+        ...prevQuizzes,
+        activeMateri.id_quiz,
+      ]);
+      localStorage.setItem(
+        `quizCompleted_${activeMateri.id_quiz}`,
+        JSON.stringify({ totalScore: nilai, correctAnswers: benar })
+      );
     }
-  
+
     setIsQuizMode(false);
+
+    // *Hitung progres berdasarkan jumlah materi dalam kursus*
+    if (activeCourse && combinedData) {
+      const totalMateri = combinedData.length; // Total materi dalam kursus (termasuk kuis)
+      const persentasePerMateri = 100 / totalMateri; // Setiap materi menyumbang sekian persen dari total kursus
+      const increment = persentasePerMateri;
+      const newProgress = Math.min(activeCourse.progress + increment, 100);
+      if (!isRetake) {
+        updateProgress(newProgress);
+        setRetakle(false)
+      }
+    }
   };
 
   const updateCProgress = (courseId, progress) => {
@@ -60,9 +114,11 @@ const MempelajariCoursePage = () => {
   };
 
   const handleCourseChange = (course) => {
-    setActiveCourse(course);
-    setActiveMateri(null);
-    setIsQuizMode(false);
+    try {
+      setActiveCourse(course);
+      setActiveMateri(null);
+      setIsQuizMode(false);
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -71,7 +127,9 @@ const MempelajariCoursePage = () => {
         setIsStartQuizMode(true);
         setIsQuizMode(false);
         //jadikan comment kalau mau retake quiz setelah nilainya 100, dari sini
-        const savedQuizResult = localStorage.getItem(`quizCompleted_${activeMateri.id_quiz}`);
+        const savedQuizResult = localStorage.getItem(
+          `quizCompleted_${activeMateri.id_quiz}`
+        );
         if (savedQuizResult) {
           const { totalScore, correctAnswers } = JSON.parse(savedQuizResult);
           setTotalScore(totalScore);
@@ -84,25 +142,18 @@ const MempelajariCoursePage = () => {
         setIsStartQuizMode(false);
       }
     }
-  }, [activeMateri]);   
+  }, [activeMateri]);
 
-  const calculateCourseProgress = (currentMateriIndex, totalMateri) => {
+  const calculateCourseProgress = (currentIndex, totalMateri) => {
     if (totalMateri === 0) return 0;
-    const progress = ((currentMateriIndex + 1) / totalMateri) * 100;
+    const progress = ((currentIndex + 1) / totalMateri) * 100;
     return Math.min(Math.round(progress), 100);
   };
 
-  
-  const updateProgress = async () => {
+  const updateProgress = async (newProgress) => {
     try {
-      const lastNewId = combinedData?.length;
-      const currentMateriIndex = combinedData.findIndex(item => item.new_id === activeMateri.new_id);
-
-      const newProgress = calculateCourseProgress(
-        currentMateriIndex,
-        lastNewId
-      );
-      const statusPenyelesaian = newProgress === 100 ? "Completed" : "In Progress";
+      const statusPenyelesaian =
+        newProgress === 100 ? "Completed" : "In Progress";
 
       await api.put(
         "/participant/progress",
@@ -113,19 +164,16 @@ const MempelajariCoursePage = () => {
           status_penyelesaian: statusPenyelesaian,
         },
         {
-          headers: {Authorization: `Bearer ${token}`,},
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      if (activeCourse) {
-        setActiveCourse((prevCourse) => ({
-          ...prevCourse,
-          progress: newProgress,
-        }));
-      }
-
+      // Update semua state terkait progress
+      setActiveCourse((prev) => ({ ...prev, progress: newProgress }));
+      updateCProgress(activeCourse.id, newProgress);
+      refreshParticipants();
     } catch (error) {
-      console.error("Error updating course progress:", error);
+      console.error("Error updating progress:", error);
     }
   };
 
@@ -134,76 +182,146 @@ const MempelajariCoursePage = () => {
 
   const handleNext = () => {
     if (!activeMateri || !combinedData) return;
-  
-    const currentIndex = combinedData.findIndex(item => item.new_id === activeMateri.new_id);
+
+    const currentIndex = combinedData.findIndex(
+      (item) => item.new_id === activeMateri.new_id
+    );
+
     if (currentIndex === -1 || currentIndex === combinedData.length - 1) return;
-  
+
     const nextMateri = combinedData[currentIndex + 1];
+
     if (nextMateri) {
-      if (activeMateri.type !== "quiz") {
-        updateProgress();
-      }
+      // Pindah ke materi berikutnya terlebih dahulu
       setActiveMateri(nextMateri);
-      localStorage.setItem(`lastOpenedItem-${activeCourse?.id}`, nextMateri.new_id);
+      localStorage.setItem(
+        `lastOpenedItem-${activeCourse?.id}`,
+        nextMateri.new_id
+      );
+
+      // Hitung progress berdasarkan materi yang baru
+      const newIndex = currentIndex + 1;
+      const totalMateri = combinedData.length;
+      const newProgress = calculateCourseProgress(newIndex, totalMateri);
+
+      if (nextMateri.type != "quiz") {
+        //  jika bukan quiz maka update progres
+        // Update progress ke state dan API
+        updateProgress(newProgress);
+      }
+      navigate(`/learn-course/${id}`, { replace: true });
     }
   };
-  
+
   const handlePrev = () => {
     if (!activeMateri || !combinedData) return;
-  
-    const currentIndex = combinedData.findIndex(item => item.new_id === activeMateri.new_id);
+
+    const currentIndex = combinedData.findIndex(
+      (item) => item.new_id === activeMateri.new_id
+    );
     if (currentIndex <= 0) return; // Cegah error jika indeks pertama atau tidak ditemukan
-  
+
     const prevMateri = combinedData[currentIndex - 1];
     if (prevMateri) {
       setActiveMateri(prevMateri);
-      localStorage.setItem(`lastOpenedItem-${activeCourse?.id}`, prevMateri.new_id);
+      localStorage.setItem(
+        `lastOpenedItem-${activeCourse?.id}`,
+        prevMateri.new_id
+      );
       setQuizCompleted(false);
       setIsStartQuizMode(prevMateri.type === "quiz");
       setIsQuizMode(false);
+      navigate(`/learn-course/${id}`, { replace: true });
     }
-  };  
+  };
 
+  // openedok
   useEffect(() => {
-    if (activeCourse?.items?.length > 0) {
-      setActiveMateri(activeCourse.items[0]);
-    }
-  }, [activeCourse]);
+    if (id_quiz) {
+      const quizData = combinedData.find((q) => q.id_quiz === Number(id_quiz));
+      if (quizData) {
+        setIsQuizMode(mode === "retake");
+        setIsReviewMode(mode === "review");
+        setActiveMateri(quizData);
+      }
+    } else {
+      if (activeCourse && combinedData.length > 0) {
+        const lastOpenedItem = localStorage.getItem(
+          `lastOpenedItem-${activeCourse.id}`
+        );
+        const foundItem = combinedData.find(
+          (item) => item.new_id === Number(lastOpenedItem)
+        );
 
-  useEffect(() => {
-    if (activeCourse && combinedData.length > 0) {
-      const lastOpenedItem = localStorage.getItem(`lastOpenedItem-${activeCourse.id}`);
-      const foundItem = combinedData.find(item => item.new_id === Number(lastOpenedItem));
-  
-      if (foundItem) {
-        setActiveMateri(foundItem);
-      } else {
-        setActiveMateri(combinedData[0]);
+        if (foundItem) {
+          setActiveMateri(foundItem);
+        } else {
+          setActiveMateri(combinedData[0]);
+        }
       }
     }
-  }, [activeCourse, combinedData]);  
+  }, [activeCourse, combinedData]);
 
   useEffect(() => {
     if (activeMateri) {
-      localStorage.setItem(`lastOpenedItem-${activeCourse?.id}`, activeMateri.new_id);
+      localStorage.setItem(
+        `lastOpenedItem-${activeCourse?.id}`,
+        activeMateri.new_id
+      );
     }
-  }, [activeMateri, activeCourse]);  
+  }, [activeMateri, activeCourse]);
+
+  const fetchDetailHistQuizByIDP = async () => {
+    try {
+      const response = await api.get(
+        `/detail-history-quiz/${user.userData.id_pelajar}/${activeMateri.id_quiz}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const completedData = response.data || [];
+      if (completedData.length > 0) {
+        const { nilai, history_quiz } = completedData[0];
+        const correct = history_quiz[0].correct_count;
+        setTotalScore(nilai);
+        setCorrectAnswers(correct);
+      }
+      console.log("berhasil fetchDetailHistQuizByIDP:", completedData);
+      setCompletedQuizzes(completedData.map((quiz) => quiz.id_quiz));
+    } catch (error) {
+      console.error("Error fetching detailhistoryquiz:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeMateri && activeMateri.id_quiz) {
+      fetchDetailHistQuizByIDP();
+    }
+  }, [activeMateri, user, token]);
 
   const handleRetakeQuiz = () => {
+    navigate(`/learn-course/${id}?mode=retake`);
     setIsQuizMode(true);
     setIsStartQuizMode(false);
     setQuizCompleted(false);
     setTotalScore(0);
+    setRetakle(true);
     setCorrectAnswers(0);
-    setCompletedQuizzes((prev) => prev.filter(id => id !== activeMateri.id_quiz));
+    setCompletedQuizzes((prev) =>
+      prev.filter((id) => id !== activeMateri.id_quiz)
+    );
   };
-  
+
   const handleReviewAllQuestions = () => {
+    navigate(`/learn-course/${id}?mode=review`);
     setIsReviewMode(true);
+    setIsQuizMode(false);
     setIsStartQuizMode(false);
-    setCompletedQuizzes((prev) => prev.filter(id => id !== activeMateri.id_quiz));
+    setCompletedQuizzes((prev) =>
+      prev.filter((id) => id !== activeMateri.id_quiz)
+    );
   };
-  
+
   const handleBackToQuizResult = () => {
     setIsReviewMode(false);
     setIsQuizMode(false);
@@ -213,41 +331,56 @@ const MempelajariCoursePage = () => {
       }
       return prev;
     });
-    if (activeMateri?.type === "quiz") {
-      setQuizCompleted(true);
-    }
+    setQuizCompleted(true);
+    // if (activeMateri?.type === "quiz") {
+    // }
   };
-  
-  const isQuizResultVisible = activeMateri?.type === "quiz" && completedQuizzes.includes(activeMateri.id_quiz) && !isQuizMode;
+
+  const isQuizResultVisible =
+    activeMateri?.type === "quiz" &&
+    completedQuizzes.includes(activeMateri.id_quiz) &&
+    !isQuizMode &&
+    !isReviewMode;
+  const isStartQuizVisible =
+    activeMateri?.type === "quiz" &&
+    !completedQuizzes.includes(activeMateri.id_quiz) &&
+    !isQuizMode;
 
   return (
-    <div className="container-fluid d-flex" style={{ padding: "0px", background: "#d9d9d9", height: "100vh" }}>
+    <div
+      className="container-fluid d-flex"
+      style={{ padding: "0px", background: "#d9d9d9", height: "100vh" }}
+    >
       <div>
         <SidebarPelajar
           onMateriChange={handleMateriChange}
           activeMateri={activeMateri}
           onCourseChange={handleCourseChange}
-          updateCProgress={updateCProgress}
+          ref={sidebarRef}
         />
       </div>
-      <div className="flex-grow-1 d-flex align-items-center justify-content-center p-4 border-main-content" style={{ position: "relative" }}>
+      <div
+        className="flex-grow-1 d-flex align-items-center justify-content-center p-4 border-main-content"
+        style={{ position: "relative" }}
+      >
         {isQuizResultVisible ? (
           <QuizResult
             quizData={activeMateri}
             totalScore={totalScore}
             correctAnswers={correctAnswers}
-            onRetakeQuiz={handleRetakeQuiz}
-            onReview={handleReviewAllQuestions}
+            handleRetakeQuiz={handleRetakeQuiz}
+            handleReview={handleReviewAllQuestions}
           />
         ) : activeMateri ? (
           isQuizMode || isReviewMode ? (
             <MengerjakanQuiz
               quizData={activeMateri}
               onSubmitQuiz={handleQuizSubmit}
-              isReviewMode={isReviewMode}  // mode review
+              isReviewMode={isReviewMode}
               onBackToQuizResult={handleBackToQuizResult}
+              updateProgres={updateProgress}
             />
-          ) : isStartQuizMode ? (
+          ) : isStartQuizVisible ? (
             <StartQuiz
               quizData={activeMateri}
               onStartQuiz={() => {
@@ -264,7 +397,11 @@ const MempelajariCoursePage = () => {
           </div>
         )}
         {!isQuizMode && !isReviewMode && (
-          <div className={`navigation-buttons ${!isFirstMateri ? "has-prev" : "only-next"}`}>
+          <div
+            className={`navigation-buttons ${
+              !isFirstMateri ? "has-prev" : "only-next"
+            }`}
+          >
             {!isFirstMateri && (
               <button
                 className="btn course-prev-button align-items-center"

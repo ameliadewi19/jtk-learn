@@ -109,7 +109,7 @@ const upsertHistoryMateri = async (req, res) => {
       const { waktu_akses } = req.body;
 
       // Debug log untuk payload
-      console.log("Received payload:", req.body);
+      // console.log("Received payload:", req.body);
 
       // Cek apakah history materi sudah ada
       let historyMateri = await HistoryMateri.findOne({
