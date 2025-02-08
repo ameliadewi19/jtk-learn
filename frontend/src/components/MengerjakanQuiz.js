@@ -85,15 +85,13 @@ const MengerjakanQuiz = ({
         },
       });
       const questionsData = soalResponse.data;
-
-      const mappedQuestions = questionsData.pertanyaan.map(
-        (pertanyaan, index) => ({
-          ...pertanyaan,
-          id_pertanyaan: index + 1,
-          jawaban: questionsData.jawaban[index] || [],
-        })
-      );
-
+  
+      const mappedQuestions = questionsData.pertanyaan.map((pertanyaan, index) => ({
+        ...pertanyaan,
+        id_pertanyaan: index + 1,
+        jawaban: pertanyaan.jawaban || [],
+      }));
+  
       setQuestions(mappedQuestions);
       console.log("Isi pertanyaan:", mappedQuestions);
     } catch (error) {

@@ -9,8 +9,7 @@ const {
 const { authorizeRole } = require('../middleware/authorizeRole');
 
 router.get('/:id_history_quiz', authorizeRole(['pelajar']), getAllDetailHistQuizByHistQuizID);
-router.get('/:id_pelajar/:id_quiz', authorizeRole(['pelajar']), getDetailHistoryQuizPelajar);
-router.get('/:id_quiz', authorizeRole(['pengajar']), getDetailHistoryQuizData);
+router.get('/data/:id_quiz', authorizeRole(['pengajar']), getDetailHistoryQuizData);
 router.put('/detail',authorizeRole(['pelajar']), upsertDetailHistoryQuiz);
 
 module.exports = router;

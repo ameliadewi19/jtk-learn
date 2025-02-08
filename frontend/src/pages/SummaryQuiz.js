@@ -8,8 +8,6 @@ import { UserContext } from '../components/UserContext';
 const SummaryQuiz = () => {
   const [quizList, setQuizList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [quizzesPerPage] = useState(5);
   const token = localStorage.getItem('token');
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -40,10 +38,6 @@ const SummaryQuiz = () => {
     navigate(`/summary-quiz/${id}`, { state: { quizName, courseName } });
   };
 
-  const indexOfLastQuiz = currentPage * quizzesPerPage;
-  const indexOfFirstQuiz = indexOfLastQuiz - quizzesPerPage;
-  const currentQuizzes = quizList.slice(indexOfFirstQuiz, indexOfLastQuiz);
-
   if (loading) {
     return <div className="text-center mt-5">Loading...</div>;
   }
@@ -58,33 +52,31 @@ const SummaryQuiz = () => {
           {quizList.length === 0 ? (
             <p className="text-center">No quiz has been created yet</p>
           ) : (
-            <>
-              <table className="custom-quiz-table">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>Quizzes</th>
-                    <th>Action</th>
+            <table className="custom-quiz-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Quizzes</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quizList.map((quiz, index) => (
+                  <tr key={quiz.id}>
+                    <td>{index + 1}</td>
+                    <td>{quiz.nama_course}: {quiz.nama_quiz}</td>
+                    <td className="result-column">
+                      <button
+                        className="result-button"
+                        onClick={() => handleResultClick(quiz.id_quiz, quiz.nama_quiz, quiz.nama_course)}
+                      >
+                        View Result
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {currentQuizzes.map((quiz, index) => (
-                    <tr key={quiz.id}>
-                      <td>{indexOfFirstQuiz + index + 1}</td>
-                      <td>{quiz.nama_course}: {quiz.nama_quiz}</td>
-                      <td className="result-column">
-                        <button
-                          className="result-button"
-                          onClick={() => handleResultClick(quiz.id_quiz, quiz.nama_quiz, quiz.nama_course)}
-                        >
-                          View Result
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

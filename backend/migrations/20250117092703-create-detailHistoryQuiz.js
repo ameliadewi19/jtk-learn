@@ -75,7 +75,7 @@ module.exports = {
           IF (SELECT konten_jawaban FROM jawaban WHERE konten_jawaban = NEW.jawaban_text AND status_jawaban = 'benar') IS NOT NULL THEN
             NEW.status = 'benar';
           ELSE
-            NEW.status = 'salah';
+              NEW.status = 'salah';
           END IF;
         ELSE
           -- If neither id_jawaban nor jawaban_text is provided, set status to 'salah'

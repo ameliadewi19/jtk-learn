@@ -5,67 +5,36 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import api from '../services/api';
 
 const DetailSummaryQuiz = () => {
-    const location = useLocation();
+    const { state } = useLocation();
     const { id } = useParams();
-    const { quizName, courseName } = location.state || {};
+    const { quizName, courseName } = state || {};
     const [resultsList, setResultsList] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [resultsPerPage] = useState(5);
     const [sortOrder, setSortOrder] = useState('asc');
     const token = localStorage.getItem('token');
 
-    const fetchResultsList = async () => {
-        try {
-            const response = await api.get(`/detail-history-quiz/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setResultsList(response.data);
-        } catch (error) {
-            console.error('Error fetching quiz results:', error);
-            Swal.fire('Error', 'Failed to fetch quiz results. Please try again later.', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchResultsList = async () => {
+            try {
+                const response = await api.get(`/detail-history-quiz/data/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setResultsList(response.data);
+            } catch (error) {
+                console.error('Error fetching quiz results:', error);
+                Swal.fire('Error', 'Failed to fetch quiz results. Please try again later.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchResultsList();
-    }, []);
+    }, [id, token]);
 
-    useEffect(() => {
-        fetchResultsList();
-    }, []); // Hanya panggil sekali saat komponen mount
-    
     const sortedResults = [...resultsList].sort((a, b) =>
         sortOrder === 'asc'
             ? a.student_name.localeCompare(b.student_name)
             : b.student_name.localeCompare(a.student_name)
     );
-
-    const handleSortChange = (e) => {
-        setSortOrder(e.target.value);
-    };
-
-    const indexOfLastResult = currentPage * resultsPerPage;
-    const indexOfFirstResult = indexOfLastResult - resultsPerPage;
-    const currentResults = resultsList.slice(indexOfFirstResult, indexOfLastResult);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const handleNextPage = () => {
-        if (currentPage < Math.ceil(resultsList.length / resultsPerPage)) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
 
     const renderIcon = (detail, type) => {
         const item = detail.find(d => d.jenis_pertanyaan === type);
@@ -73,9 +42,7 @@ const DetailSummaryQuiz = () => {
         return item.status === 'benar' ? <i className="bi bi-check-circle-fill text-success"></i> : <i className="bi bi-x-circle-fill text-danger"></i>;
     };
 
-    if (loading) {
-        return <div className="text-center mt-5">Loading...</div>;
-    }
+    if (loading) return <div className="text-center mt-5">Loading...</div>;
 
     return (
         <div className="container-fluid py-4">
@@ -85,32 +52,30 @@ const DetailSummaryQuiz = () => {
                     <h3 className="courses-title">{courseName}: {quizName}</h3>
                 </div>
                 <div className="quiz-table">
-                    <div className="sort-select">
-                        <label htmlFor="sort">Student Name</label>
-                        <select className='custom-select' name="sort" id="sort" value={sortOrder} onChange={handleSortChange}>
-                            <option value="asc">A-Z</option>
-                            <option value="desc">Z-A</option>
-                        </select>
-                    </div>
-                    {resultsList.length === 0 ? (
-                        <p className="text-center">No students have taken the quiz yet</p>
-                    ) : (
+                    {resultsList.length > 0 ? (
                         <>
+                            <div className="sort-select">
+                                <label htmlFor="sort">Student Name</label>
+                                <select className='custom-select' id="sort" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                                    <option value="asc">A-Z</option>
+                                    <option value="desc">Z-A</option>
+                                </select>
+                            </div>
                             <table className="custom-result-table">
                                 <thead className="table-gray">
                                     <tr>
                                         <th>No</th>
                                         <th>Student Name</th>
-                                        <th>Total Grades</th>
-                                        <th>Q: Pilihan Ganda<br /><span className="points">(25 points)</span></th>
-                                        <th>Q: Jawaban Singkat<br /><span className="points">(40 points)</span></th>
-                                        <th>Q: Operasi Matematika<br /><span className="points">(35 points)</span></th>
+                                        <th>Grade</th>
+                                        <th>Q1<br /><span className="points">(25 points)</span></th>
+                                        <th>Q2<br /><span className="points">(40 points)</span></th>
+                                        <th>Q3<br /><span className="points">(35 points)</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentResults.map((result, index) => (
+                                    {sortedResults.map((result, index) => (
                                         <tr key={result.id}>
-                                            <td>{indexOfFirstResult + index + 1}</td>
+                                            <td>{index + 1}</td>
                                             <td>{result.student_name}</td>
                                             <td>{result.nilai}</td>
                                             <td>{renderIcon(result.detail, 'pilihan_ganda')}</td>
@@ -121,6 +86,8 @@ const DetailSummaryQuiz = () => {
                                 </tbody>
                             </table>
                         </>
+                    ) : (
+                        <p className="text-center">No students have taken the quiz yet</p>
                     )}
                 </div>
             </div>
